@@ -8,21 +8,59 @@ jobs:
     steps:
       - run: |
           echo "=== OS ==="
-          cat /etc/os-release | head -4
+          cat /etc/os-release
           echo ""
+          uname -a
+          echo ""
+
           echo "=== CPU ==="
-          nproc
-          lscpu | grep "Model name"
+          echo "Cores: $(nproc)"
+          lscpu | grep -E "Model name|CPU\(s\)|Thread|Core|Socket|L1|L2|L3"
           echo ""
+
           echo "=== RAM ==="
           free -h
           echo ""
-          echo "=== DISK ==="
-          df -h /
+          cat /proc/meminfo | grep -E "MemTotal|MemFree|MemAvailable|Swap"
           echo ""
+
+          echo "=== ALL MOUNTS ==="
+          df -h
+          echo ""
+
+          echo "=== MOUNT TYPES ==="
+          df -T
+          echo ""
+
+          echo "=== TMP FOLDER ==="
+          df -h /tmp
+          echo "Size /tmp: $(du -sh /tmp 2>/dev/null | cut -f1)"
+          echo ""
+
+          echo "=== ADDITIONAL STORAGE CHECK ==="
+          lsblk 2>/dev/null || echo "lsblk not available"
+          echo ""
+          fdisk -l 2>/dev/null | head -30 || echo "fdisk not available"
+          echo ""
+
+          echo "=== DISK SPACE PER DIRECTORY (top 15) ==="
+          du -sh /* 2>/dev/null | sort -rh | head -15
+          echo ""
+
+          echo "=== RAMDISK / OVERLAY ==="
+          mount | grep -E "tmpfs|overlay|ram"
+          echo ""
+
           echo "=== SUMMARY ==="
           echo "CPU Cores: $(nproc)"
           echo "RAM Total: $(free -h | awk '/^Mem:/{print $2}')"
           echo "RAM Avail: $(free -h | awk '/^Mem:/{print $7}')"
-          echo "Disk Total: $(df -h / | awk 'NR==2{print $2}')"
-          echo "Disk Avail: $(df -h / | awk 'NR==2{print $4}')"
+          echo "Swap: $(free -h | awk '/^Swap:/{print $2}')"
+          echo ""
+          echo "--- ALL PARTITIONS ---"
+          df -h --total | grep -v tmpfs | grep -v devtmpfs
+          echo ""
+          echo "Root Disk Total: $(df -h / | awk 'NR==2{print $2}')"
+          echo "Root Disk Avail: $(df -h / | awk 'NR==2{print $4}')"
+          echo "/tmp Total: $(df -h /tmp 2>/dev/null | awk 'NR==2{print $2}')"
+          echo "/tmp Avail: $(df -h /tmp 2>/dev/null | awk 'NR==2{print $4}')"
