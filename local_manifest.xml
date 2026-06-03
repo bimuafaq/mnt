@@ -29,7 +29,6 @@
   <remove-project name="LineageOS/android_packages_apps_BasicSmsReceiver" />
   <remove-project name="LineageOS/android_packages_apps_Bluetooth" />
   <remove-project name="LineageOS/android_packages_apps_Camera2" />
-  <remove-project name="LineageOS/android_packages_apps_Car_Settings" />
   <remove-project name="LineageOS/android_packages_apps_CarrierConfig" />
   <remove-project name="LineageOS/android_packages_apps_CellBroadcastReceiver" />
   <remove-project name="LineageOS/android_packages_apps_CertInstaller" />
@@ -84,7 +83,6 @@
   <remove-project name="LineageOS/android_packages_screensavers_Basic" />
   <remove-project name="LineageOS/android_packages_screensavers_PhotoTable" />
   <remove-project name="LineageOS/android_packages_services_BuiltInPrintService" />
-  <remove-project name="LineageOS/android_packages_services_Car" />
   <remove-project name="LineageOS/android_packages_services_Mms" />
   <remove-project name="LineageOS/android_packages_services_Telecomm" />
   <remove-project name="LineageOS/android_packages_services_Telephony" />
@@ -104,7 +102,6 @@
   <remove-project name="device/generic/arm64" />
   <remove-project name="device/generic/armv7-a-neon" />
   <remove-project name="device/generic/art" />
-  <remove-project name="device/generic/car" />
   <remove-project name="device/generic/common" />
   <remove-project name="device/generic/mini-emulator-arm64" />
   <remove-project name="device/generic/mini-emulator-armv7-a-neon" />
@@ -147,22 +144,6 @@
   <remove-project name="platform/external/virglrenderer" />
   <remove-project name="platform/external/wayland" />
   <remove-project name="platform/external/wayland-protocols" />
-  <remove-project name="platform/packages/apps/Car/Calendar" />
-  <remove-project name="platform/packages/apps/Car/Cluster" />
-  <remove-project name="platform/packages/apps/Car/Dialer" />
-  <remove-project name="platform/packages/apps/Car/Hvac" />
-  <remove-project name="platform/packages/apps/Car/LatinIME" />
-  <remove-project name="platform/packages/apps/Car/Launcher" />
-  <remove-project name="platform/packages/apps/Car/LinkViewer" />
-  <remove-project name="platform/packages/apps/Car/LocalMediaPlayer" />
-  <remove-project name="platform/packages/apps/Car/Media" />
-  <remove-project name="platform/packages/apps/Car/Messenger" />
-  <remove-project name="platform/packages/apps/Car/Notification" />
-  <remove-project name="platform/packages/apps/Car/Radio" />
-  <remove-project name="platform/packages/apps/Car/RotaryController" />
-  <remove-project name="platform/packages/apps/Car/SystemUpdater" />
-  <remove-project name="platform/packages/apps/Car/libs" />
-  <remove-project name="platform/packages/apps/Car/tests" />
   <remove-project name="platform/packages/apps/OnDeviceAppPrediction" />
   <remove-project name="platform/packages/apps/OneTimeInitializer" />
   <remove-project name="platform/packages/apps/Provision" />
