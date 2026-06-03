@@ -28,11 +28,6 @@
   <remove-project name="LineageOS/android_device_generic_goldfish-opengl" />
   <remove-project name="LineageOS/android_device_google_atv" />
 
-  <remove-project name="platform/compatibility/cdd" />
-  <remove-project name="LineageOS/android_cts" />
-  <remove-project name="platform/pdk" />
-  <remove-project name="platform/platform_testing" />
-
   <remove-project name="LineageOS/android_packages_apps_AudioFX" />
   <remove-project name="LineageOS/android_packages_apps_Backgrounds" />
   <remove-project name="LineageOS/android_packages_apps_BasicSmsReceiver" />
@@ -133,43 +128,6 @@
   <remove-project name="LineageOS/android_packages_screensavers_Basic" />
   <remove-project name="LineageOS/android_packages_screensavers_PhotoTable" />
 
-  <remove-project name="platform/packages/modules/ArtPrebuilt" />
-  <remove-project name="LineageOS/android_packages_modules_CaptivePortalLogin" />
-  <remove-project name="LineageOS/android_packages_modules_CellBroadcastService" />
-  <remove-project name="platform/packages/modules/Cronet" />
-  <remove-project name="platform/packages/modules/ExtServices" />
-  <remove-project name="platform/packages/modules/IPsec" />
-  <remove-project name="platform/packages/modules/ModuleMetadata" />
-  <remove-project name="platform/packages/modules/NetworkPermissionConfig" />
-  <remove-project name="platform/packages/modules/SdkExtensions" />
-  <remove-project name="platform/packages/modules/TestModule" />
-
-  <remove-project name="platform/external/autotest" />
-  <remove-project name="platform/external/androidplot" />
-  <remove-project name="platform/external/arm-neon-tests" />
-  <remove-project name="platform/external/deqp" />
-  <remove-project name="platform/external/deqp-deps/SPIRV-Headers" />
-  <remove-project name="platform/external/deqp-deps/SPIRV-Tools" />
-  <remove-project name="platform/external/deqp-deps/amber" />
-  <remove-project name="platform/external/deqp-deps/glslang" />
-  <remove-project name="platform/external/drrickorang" />
-  <remove-project name="platform/external/honggfuzz" />
-  <remove-project name="platform/external/linux-kselftest" />
-  <remove-project name="platform/external/ltp" />
-  <remove-project name="platform/external/oss-fuzz" />
-  <remove-project name="platform/external/replicaisland" />
-  <remove-project name="platform/external/scapy" />
-  <remove-project name="platform/external/skqp" />
-  <remove-project name="platform/external/stressapptest" />
-  <remove-project name="platform/external/tensorflow" />
-  <remove-project name="platform/external/v8" />
-  <remove-project name="platform/external/webrtc" />
-  <remove-project name="platform/external/wycheproof" />
-  <remove-project name="platform/external/OpenCL-CTS" />
-  <remove-project name="platform/external/arm-optimized-routines" />
-  <remove-project name="platform/external/caliper" />
-  <remove-project name="platform/external/cblas" />
-
   <remove-project name="platform/external/google-fonts/arbutus-slab" />
   <remove-project name="platform/external/google-fonts/arvo" />
   <remove-project name="platform/external/google-fonts/barlow" />
@@ -209,47 +167,11 @@
   <remove-project name="LineageOS/android_external_chromium-webview_prebuilt_x86" />
   <remove-project name="LineageOS/android_external_chromium-webview_prebuilt_x86_64" />
 
-  <remove-project name="platform/external/adhd" />
-  <remove-project name="platform/external/adeb" />
-  <remove-project name="platform/external/crosvm" />
-  <remove-project name="platform/external/iperf3" />
-  <remove-project name="platform/external/tcpdump" />
-  <remove-project name="platform/external/virglrenderer" />
-  <remove-project name="platform/external/wayland" />
-  <remove-project name="platform/external/wayland-protocols" />
-  <remove-project name="platform/external/toolchain-utils" />
-  <remove-project name="platform/external/vboot_reference" />
-  <remove-project name="platform/external/mesa3d" />
-  <remove-project name="platform/external/swiftshader" />
-  <remove-project name="platform/external/angle" />
-
-  <remove-project name="platform/hardware/google/pixel-sepolicy" />
-  <remove-project name="platform/hardware/invensense" />
-  <remove-project name="platform/hardware/qcom/sdm845/bt" />
-  <remove-project name="platform/hardware/qcom/sdm845/data/ipacfg-mgr" />
-  <remove-project name="platform/hardware/qcom/sdm845/gps" />
-  <remove-project name="platform/hardware/qcom/sdm845/media" />
-  <remove-project name="platform/hardware/qcom/sdm845/thermal" />
-  <remove-project name="platform/hardware/qcom/sdm845/vr" />
-  <remove-project name="platform/hardware/qcom/sm7150/gps" />
-
   <remove-project name="platform/prebuilts/fuchsia_sdk" />
   <remove-project name="platform/prebuilts/android-emulator" />
-  <remove-project name="platform/prebuilts/asuite" />
-  <remove-project name="platform/prebuilts/checkcolor" />
-  <remove-project name="platform/prebuilts/checkstyle" />
-  <remove-project name="platform/prebuilts/cmdline-tools" />
-  <remove-project name="platform/prebuilts/gradle-plugin" />
-  <remove-project name="platform/prebuilts/manifest-merger" />
-  <remove-project name="platform/prebuilts/module_sdk/art" />
-  <remove-project name="platform/prebuilts/ktlint" />
   <remove-project name="platform/prebuilts/python/darwin-x86/2.7.5" />
   <remove-project name="platform/prebuilts/qemu-kernel" />
   <remove-project name="platform/prebuilts/remoteexecution-client" />
-  <remove-project name="platform/prebuilts/bundletool" />
-  <remove-project name="platform/prebuilts/devtools" />
-  <remove-project name="platform/prebuilts/maven_repo/android" />
-  <remove-project name="platform/prebuilts/maven_repo/bumptech" />
   <remove-project name="platform/prebuilts/gdb/darwin-x86" />
 
   <remove-project name="LineageOS/android_prebuilts_gcc_darwin-x86_aarch64_aarch64-linux-android-4.9" />
@@ -257,57 +179,6 @@
   <remove-project name="LineageOS/android_prebuilts_gcc_darwin-x86_x86_x86_64-linux-android-4.9" />
   <remove-project name="platform/prebuilts/gcc/darwin-x86/host/i686-apple-darwin-4.2.1" />
   <remove-project name="platform/prebuilts/gcc/linux-x86/host/x86_64-w64-mingw32-4.8" />
-
-  <remove-project name="platform/tools/acloud" />
-  <remove-project name="platform/tools/adt/idea" />
-  <remove-project name="platform/tools/apifinder" />
-  <remove-project name="platform/tools/asuite" />
-  <remove-project name="platform/tools/base" />
-  <remove-project name="platform/tools/build" />
-  <remove-project name="platform/tools/carrier_settings" />
-  <remove-project name="platform/tools/currysrc" />
-  <remove-project name="platform/tools/dexter" />
-  <remove-project name="platform/tools/doc_generation" />
-  <remove-project name="platform/tools/external_updater" />
-  <remove-project name="platform/tools/external/fat32lib" />
-  <remove-project name="platform/tools/idea" />
-  <remove-project name="platform/tools/loganalysis" />
-  <remove-project name="platform/tools/motodev" />
-  <remove-project name="platform/tools/ndkports" />
-  <remove-project name="platform/tools/repohooks" />
-  <remove-project name="platform/tools/security" />
-  <remove-project name="platform/tools/studio/cloud" />
-  <remove-project name="platform/tools/swt" />
-  <remove-project name="platform/tools/test/connectivity" />
-  <remove-project name="platform/tools/test/graphicsbenchmark" />
-  <remove-project name="platform/tools/tradefederation/contrib" />
-  <remove-project name="platform/tools/tradefederation" />
-  <remove-project name="platform/tools/treble" />
-  <remove-project name="platform/tools/trebuchet" />
-  <remove-project name="tools/platform-compat" />
-
-  <remove-project name="platform/test/framework" />
-  <remove-project name="platform/test/mlts/benchmark" />
-  <remove-project name="platform/test/mlts/models" />
-  <remove-project name="platform/test/mts" />
-  <remove-project name="platform/test/suite_harness" />
-  <remove-project name="platform/test/vti/dashboard" />
-  <remove-project name="platform/test/vti/fuzz_test_serving" />
-  <remove-project name="platform/test/vti/test_serving" />
-  <remove-project name="platform/test/vts" />
-  <remove-project name="platform/test/vts-testcase/fuzz" />
-  <remove-project name="platform/test/vts-testcase/hal" />
-  <remove-project name="platform/test/vts-testcase/hal-trace" />
-  <remove-project name="platform/test/vts-testcase/kernel" />
-  <remove-project name="platform/test/vts-testcase/nbu" />
-  <remove-project name="platform/test/vts-testcase/performance" />
-  <remove-project name="platform/test/vts-testcase/security" />
-  <remove-project name="platform/test/vts-testcase/vndk" />
-  <remove-project name="platform/test/app_compat/csuite" />
-
-
-  <remove-project name="kernel/prebuilts/4.19/arm64" />
-  <remove-project name="kernel/tests" />
 
   <remove-project name="LineageOS/charter" />
   <remove-project name="LineageOS/cm_crowdin" />
@@ -318,16 +189,6 @@
   <remove-project name="LineageOS/lineage_wiki" />
   <remove-project name="LineageOS/contributors-cloud-generator" />
   <remove-project name="LineageOS/scripts" />
-
-  <remove-project name="platform/frameworks/opt/car/services" />
-  <remove-project name="platform/frameworks/opt/car/setupwizard" />
-  <remove-project name="platform/frameworks/opt/photoviewer" />
-  <remove-project name="platform/frameworks/opt/setupwizard" />
-  <remove-project name="platform/frameworks/opt/tv/tvsystem" />
-  <remove-project name="platform/frameworks/opt/net/ethernet" />
-  <remove-project name="platform/frameworks/opt/net/ims" />
-  <remove-project name="platform/frameworks/opt/net/voip" />
-  <remove-project name="platform/frameworks/opt/localepicker" />
 
   <remove-project name="LineageOS/android_frameworks_base" />
   <project path="frameworks/base" name="bimuafaq/android_frameworks_base" groups="pdk-cw-fs,pdk-fs" remote="github" revision="lineage-18.1" />
