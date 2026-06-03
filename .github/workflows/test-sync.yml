@@ -9,19 +9,41 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
+      - name: Install build packages
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq \
+            bc bison build-essential ccache curl flex g++-multilib gcc-multilib \
+            git git-lfs gnupg gperf imagemagick protobuf-compiler python3-protobuf \
+            lib32readline-dev lib32z1-dev libdw-dev libelf-dev libgnutls28-dev lz4 \
+            libsdl1.2-dev libssl-dev libxml2 libxml2-utils lzop pngcrush rsync \
+            schedtool squashfs-tools xsltproc xxd zip zlib1g-dev \
+            lib32ncurses5-dev libncurses5 libncurses5-dev
+          sudo apt-get install -y -qq python-is-python3
+
       - name: Install repo
         run: |
           sudo wget -q https://storage.googleapis.com/git-repo-downloads/repo -O /usr/local/bin/repo
           sudo chmod a+x /usr/local/bin/repo
           repo --version
 
+      - name: Setup ccache
+        run: |
+          ccache -M 20G
+          ccache -o compression=true
+
       - name: Free space before
         run: df -h /
 
-      - name: Repo init
+      - name: Git config
         run: |
           git config --global user.name "ci"
           git config --global user.email "ci@ci.com"
+          git lfs install
+          git config --global trailer.changeid.key "Change-Id"
+
+      - name: Repo init
+        run: |
           repo init --depth=1 -u https://github.com/LineageOS/android.git -b lineage-18.1
 
       - name: Copy local manifest
