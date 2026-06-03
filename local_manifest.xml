@@ -39,7 +39,6 @@
   <remove-project name="LineageOS/android_packages_apps_Jelly" />
   <remove-project name="LineageOS/android_packages_apps_LineageCustomizer" />
   <remove-project name="LineageOS/android_packages_apps_Messaging" />
-  <remove-project name="LineageOS/android_packages_apps_PhoneCommon" />
   <remove-project name="LineageOS/android_packages_apps_SafetyRegulatoryInfo" />
   <remove-project name="LineageOS/android_packages_apps_Seedvault" />
   <remove-project name="LineageOS/android_packages_apps_Snap" />
