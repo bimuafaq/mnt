@@ -1,19 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <manifest>
 
-  <!-- ============================================================ -->
-  <!-- DEVICE TREES                                                  -->
-  <!-- ============================================================ -->
   <project path="device/realme/RMX2185" name="bimuafaq/device_realme_RMX2185" remote="github" revision="lineage-18.1" />
   <project path="vendor/realme/RMX2185" name="bimuafaq/vendor_realme_RMX2185" remote="github" revision="lineage-18.1" />
   <project path="kernel/realme/RMX2185" name="bimuafaq/kernel_realme_RMX2185" remote="github" revision="lineage-17.1" />
 
-  <!-- ============================================================ -->
-  <!-- REMOVE PROJECT (save storage - skip unneeded repos)            -->
-  <!-- Build target: SystemUI + Settings + Trebuchet + DeskClock     -->
-  <!-- ============================================================ -->
-
-  <!-- Device generic/google/sample -->
   <remove-project name="device/generic/arm64" />
   <remove-project name="device/generic/armv7-a-neon" />
   <remove-project name="device/generic/art" />
@@ -37,13 +28,11 @@
   <remove-project name="LineageOS/android_device_generic_goldfish-opengl" />
   <remove-project name="LineageOS/android_device_google_atv" />
 
-  <!-- Testing / CTS / SDK -->
   <remove-project name="platform/compatibility/cdd" />
   <remove-project name="LineageOS/android_cts" />
   <remove-project name="platform/pdk" />
   <remove-project name="platform/platform_testing" />
 
-  <!-- packages/apps (Lineage) - not SystemUI/Settings/Trebuchet -->
   <remove-project name="LineageOS/android_packages_apps_AudioFX" />
   <remove-project name="LineageOS/android_packages_apps_Backgrounds" />
   <remove-project name="LineageOS/android_packages_apps_BasicSmsReceiver" />
@@ -90,7 +79,6 @@
   <remove-project name="LineageOS/android_packages_apps_WallpaperPicker2" />
   <remove-project name="LineageOS/android_packages_apps_SettingsIntelligence" />
 
-  <!-- packages/apps (AOSP) -->
   <remove-project name="platform/packages/apps/OnDeviceAppPrediction" />
   <remove-project name="platform/packages/apps/OneTimeInitializer" />
   <remove-project name="platform/packages/apps/Provision" />
@@ -99,7 +87,6 @@
   <remove-project name="platform/packages/apps/TV" />
   <remove-project name="platform/packages/apps/UniversalMediaPlayer" />
 
-  <!-- packages/apps/Car -->
   <remove-project name="platform/packages/apps/Car/Calendar" />
   <remove-project name="platform/packages/apps/Car/Cluster" />
   <remove-project name="platform/packages/apps/Car/Dialer" />
@@ -118,7 +105,6 @@
   <remove-project name="platform/packages/apps/Car/libs" />
   <remove-project name="platform/packages/apps/Car/tests" />
 
-  <!-- packages/providers -->
   <remove-project name="LineageOS/android_packages_providers_BlockedNumberProvider" />
   <remove-project name="LineageOS/android_packages_providers_BookmarkProvider" />
   <remove-project name="LineageOS/android_packages_providers_CalendarProvider" />
@@ -131,7 +117,6 @@
   <remove-project name="LineageOS/android_packages_providers_UserDictionaryProvider" />
   <remove-project name="platform/packages/providers/TvProvider" />
 
-  <!-- packages/services -->
   <remove-project name="LineageOS/android_packages_services_BuiltInPrintService" />
   <remove-project name="LineageOS/android_packages_services_Car" />
   <remove-project name="LineageOS/android_packages_services_Mms" />
@@ -140,17 +125,14 @@
   <remove-project name="platform/packages/services/AlternativeNetworkAccess" />
   <remove-project name="platform/packages/services/Mtp" />
 
-  <!-- packages/inputmethods -->
   <remove-project name="LineageOS/android_packages_inputmethods_LatinIME" />
   <remove-project name="platform/packages/inputmethods/LeanbackIME" />
 
-  <!-- packages/wallpapers & screensavers -->
   <remove-project name="LineageOS/android_packages_wallpapers_LivePicker" />
   <remove-project name="platform/packages/wallpapers/ImageWallpaper" />
   <remove-project name="LineageOS/android_packages_screensavers_Basic" />
   <remove-project name="LineageOS/android_packages_screensavers_PhotoTable" />
 
-  <!-- packages/modules -->
   <remove-project name="platform/packages/modules/ArtPrebuilt" />
   <remove-project name="LineageOS/android_packages_modules_CaptivePortalLogin" />
   <remove-project name="LineageOS/android_packages_modules_CellBroadcastService" />
@@ -162,7 +144,6 @@
   <remove-project name="platform/packages/modules/SdkExtensions" />
   <remove-project name="platform/packages/modules/TestModule" />
 
-  <!-- external/ test/benchmark/fuzz -->
   <remove-project name="platform/external/autotest" />
   <remove-project name="platform/external/androidplot" />
   <remove-project name="platform/external/arm-neon-tests" />
@@ -189,7 +170,6 @@
   <remove-project name="platform/external/caliper" />
   <remove-project name="platform/external/cblas" />
 
-  <!-- external/ fonts -->
   <remove-project name="platform/external/google-fonts/arbutus-slab" />
   <remove-project name="platform/external/google-fonts/arvo" />
   <remove-project name="platform/external/google-fonts/barlow" />
@@ -211,7 +191,6 @@
   <remove-project name="platform/external/markdown" />
   <remove-project name="platform/external/google-styleguide" />
 
-  <!-- external/ Lineage non-essential -->
   <remove-project name="LineageOS/android_external_bash" />
   <remove-project name="LineageOS/android_external_htop" />
   <remove-project name="LineageOS/android_external_libncurses" />
@@ -224,14 +203,12 @@
   <remove-project name="LineageOS/android_external_ant-wireless_ant_native" />
   <remove-project name="LineageOS/android_external_ant-wireless_ant_service" />
 
-  <!-- external/ Chromium WebView (patch & prebuilt) -->
   <remove-project name="LineageOS/android_external_chromium-webview_patches" />
   <remove-project name="LineageOS/android_external_chromium-webview_prebuilt_arm" />
   <remove-project name="LineageOS/android_external_chromium-webview_prebuilt_arm64" />
   <remove-project name="LineageOS/android_external_chromium-webview_prebuilt_x86" />
   <remove-project name="LineageOS/android_external_chromium-webview_prebuilt_x86_64" />
 
-  <!-- external/ AOSP non-essential -->
   <remove-project name="platform/external/adhd" />
   <remove-project name="platform/external/adeb" />
   <remove-project name="platform/external/crosvm" />
@@ -246,7 +223,6 @@
   <remove-project name="platform/external/swiftshader" />
   <remove-project name="platform/external/angle" />
 
-  <!-- hardware/ (not used by device) -->
   <remove-project name="platform/hardware/google/pixel-sepolicy" />
   <remove-project name="platform/hardware/invensense" />
   <remove-project name="platform/hardware/qcom/sdm845/bt" />
@@ -257,8 +233,6 @@
   <remove-project name="platform/hardware/qcom/sdm845/vr" />
   <remove-project name="platform/hardware/qcom/sm7150/gps" />
 
-  <!-- prebuilts: safe to remove (darwin-only / non-essential) -->
-  <!-- DO NOT REMOVE: clang, gcc/linux-x86, jdk, sdk, ndk -->
   <remove-project name="platform/prebuilts/fuchsia_sdk" />
   <remove-project name="platform/prebuilts/android-emulator" />
   <remove-project name="platform/prebuilts/asuite" />
@@ -278,15 +252,12 @@
   <remove-project name="platform/prebuilts/maven_repo/bumptech" />
   <remove-project name="platform/prebuilts/gdb/darwin-x86" />
 
-  <!-- prebuilts GCC: only remove darwin & mingw (Windows cross-compile) -->
   <remove-project name="LineageOS/android_prebuilts_gcc_darwin-x86_aarch64_aarch64-linux-android-4.9" />
   <remove-project name="LineageOS/android_prebuilts_gcc_darwin-x86_arm_arm-linux-androideabi-4.9" />
   <remove-project name="LineageOS/android_prebuilts_gcc_darwin-x86_x86_x86_64-linux-android-4.9" />
   <remove-project name="platform/prebuilts/gcc/darwin-x86/host/i686-apple-darwin-4.2.1" />
   <remove-project name="platform/prebuilts/gcc/linux-x86/host/x86_64-w64-mingw32-4.8" />
 
-  <!-- tools/: safe to remove (not needed for make SystemUI) -->
-  <!-- DO NOT REMOVE: soong, ninja, make, aapt, aapt2, d8, r8 -->
   <remove-project name="platform/tools/acloud" />
   <remove-project name="platform/tools/adt/idea" />
   <remove-project name="platform/tools/apifinder" />
@@ -315,7 +286,6 @@
   <remove-project name="platform/tools/trebuchet" />
   <remove-project name="tools/platform-compat" />
 
-  <!-- test/ -->
   <remove-project name="platform/test/framework" />
   <remove-project name="platform/test/mlts/benchmark" />
   <remove-project name="platform/test/mlts/models" />
@@ -335,12 +305,10 @@
   <remove-project name="platform/test/vts-testcase/vndk" />
   <remove-project name="platform/test/app_compat/csuite" />
 
-  <!-- kernel/ (not building kernel) -->
   <remove-project name="kernel/configs" />
   <remove-project name="kernel/prebuilts/4.19/arm64" />
   <remove-project name="kernel/tests" />
 
-  <!-- LineageOS infrastructure -->
   <remove-project name="LineageOS/charter" />
   <remove-project name="LineageOS/cm_crowdin" />
   <remove-project name="LineageOS/hudson" />
@@ -351,7 +319,6 @@
   <remove-project name="LineageOS/contributors-cloud-generator" />
   <remove-project name="LineageOS/scripts" />
 
-  <!-- frameworks/opt non-essential -->
   <remove-project name="platform/frameworks/opt/car/services" />
   <remove-project name="platform/frameworks/opt/car/setupwizard" />
   <remove-project name="platform/frameworks/opt/photoviewer" />
@@ -362,9 +329,6 @@
   <remove-project name="platform/frameworks/opt/net/voip" />
   <remove-project name="platform/frameworks/opt/localepicker" />
 
-  <!-- ============================================================ -->
-  <!-- CUSTOM FORKS (replace upstream) - remove-project MUST be first -->
-  <!-- ============================================================ -->
   <remove-project name="LineageOS/android_frameworks_base" />
   <project path="frameworks/base" name="bimuafaq/android_frameworks_base" groups="pdk-cw-fs,pdk-fs" remote="github" revision="lineage-18.1" />
 
