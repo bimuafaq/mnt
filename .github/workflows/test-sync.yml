@@ -26,6 +26,7 @@ jobs:
 
       - name: Copy local manifest
         run: |
+          mkdir -p .repo/local_manifests
           cp local_manifest.xml .repo/local_manifests/
 
       - name: Repo sync
