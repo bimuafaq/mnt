@@ -56,3 +56,9 @@ jobs:
       - name: Source size
         run: |
           du -sh --exclude=.git
+
+      - name: Build SystemUI
+        run: |
+          source build/envsetup.sh
+          lunch lineage_RMX2185-user
+          make SystemUI -j$(nproc)
