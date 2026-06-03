@@ -27,9 +27,6 @@ jobs:
           sudo chmod a+x /usr/local/bin/repo
           repo --version
 
-      - name: Free space before
-        run: df -h /
-
       - name: Git config
         run: |
           git config --global user.name "ci"
@@ -40,15 +37,18 @@ jobs:
       - name: Repo init
         run: |
           repo init --depth=1 -u https://github.com/LineageOS/android.git -b lineage-18.1
-
-      - name: Copy local manifest
-        run: |
           mkdir -p .repo/local_manifests
           cp local_manifest.xml .repo/local_manifests/
 
       - name: Repo sync
         run: |
           repo sync --force-sync -c --no-tags --optimized-fetch --prune -j$(nproc)
+
+      - name: Build
+        run: |
+          source build/envsetup.sh
+          lunch lineage_RMX2185-userdebug
+          make SystemUI -j$(nproc)
 
       - name: Free space after
         run: df -h /
@@ -57,8 +57,3 @@ jobs:
         run: |
           du -sh --exclude=.git
 
-      - name: Build SystemUI
-        run: |
-          source build/envsetup.sh
-          lunch lineage_RMX2185-user
-          make SystemUI -j$(nproc)
