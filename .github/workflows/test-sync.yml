@@ -1,0 +1,36 @@
+name: Test Manifest Sync
+
+on: [workflow_dispatch]
+
+jobs:
+  test-sync:
+    runs-on: ubuntu-22.04
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install repo
+        run: |
+          sudo wget -q https://storage.googleapis.com/git-repo-downloads/repo -O /usr/local/bin/repo
+          sudo chmod a+x /usr/local/bin/repo
+          repo --version
+
+      - name: Free space before
+        run: df -h /
+
+      - name: Repo init
+        run: |
+          git config --global user.name "ci"
+          git config --global user.email "ci@ci.com"
+          repo init --depth=1 -u https://github.com/LineageOS/android.git -b lineage-18.1
+
+      - name: Copy local manifest
+        run: |
+          cp local_manifest.xml .repo/local_manifests/
+
+      - name: Repo sync (timeout 3min)
+        run: |
+          timeout 180 repo sync --force-sync -j4 || true
+
+      - name: Free space after
+        run: df -h /
