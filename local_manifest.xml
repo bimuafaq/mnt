@@ -305,7 +305,7 @@
   <remove-project name="platform/test/vts-testcase/vndk" />
   <remove-project name="platform/test/app_compat/csuite" />
 
-  <remove-project name="kernel/configs" />
+
   <remove-project name="kernel/prebuilts/4.19/arm64" />
   <remove-project name="kernel/tests" />
 
