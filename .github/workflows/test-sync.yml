@@ -28,9 +28,13 @@ jobs:
         run: |
           cp local_manifest.xml .repo/local_manifests/
 
-      - name: Repo sync (timeout 3min)
+      - name: Repo sync
         run: |
-          timeout 180 repo sync --force-sync -j4 || true
+          repo sync --force-sync -c --no-tags --optimized-fetch --prune -j$(nproc)
 
       - name: Free space after
         run: df -h /
+
+      - name: Source size
+        run: |
+          du -sh --exclude=.git
