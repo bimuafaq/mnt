@@ -276,9 +276,7 @@
   <remove-project name="platform/prebuilts/gas/linux-x86" />
   <remove-project name="platform/prebuilts/gradle-plugin" />
   <remove-project name="platform/prebuilts/manifest-merger" />
-  <remove-project name="platform/prebuilts/misc" />
   <remove-project name="platform/prebuilts/module_sdk/art" />
-  <remove-project name="platform/prebuilts/ndk" />
   <remove-project name="platform/prebuilts/ktlint" />
   <remove-project name="platform/prebuilts/python/darwin-x86/2.7.5" />
   <remove-project name="platform/prebuilts/qemu-kernel" />
@@ -294,8 +292,6 @@
   <remove-project name="platform/prebuilts/maven_repo/bumptech" />
   <remove-project name="platform/prebuilts/gdb/darwin-x86" />
   <remove-project name="platform/prebuilts/gdb/linux-x86" />
-
-  <remove-project name="platform/prebuilts/sdk" />
 
   <!-- ── prebuilts GCC (darwin) ── -->
   <remove-project name="LineageOS/android_prebuilts_gcc_darwin-x86_aarch64_aarch64-linux-android-4.9" />
