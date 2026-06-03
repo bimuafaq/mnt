@@ -285,7 +285,6 @@
   <remove-project name="platform/prebuilts/remoteexecution-client" />
   <remove-project name="platform/prebuilts/runtime" />
   <remove-project name="platform/prebuilts/rust" />
-  <remove-project name="platform/prebuilts/tools" />
   <remove-project name="platform/prebuilts/vndk/v27" />
   <remove-project name="platform/prebuilts/vndk/v28" />
   <remove-project name="platform/prebuilts/vndk/v29" />
