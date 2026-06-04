@@ -1,6 +1,18 @@
 name: Build AOSP Module
 
-on: [workflow_dispatch]
+on:
+  workflow_dispatch:
+    inputs:
+      target:
+        description: 'Module to build'
+        type: choice
+        required: true
+        default: SystemUI
+        options:
+          - SystemUI
+          - TrebuchetQuickStep
+          - Settings
+          - org.lineageos.platform SystemUI LineageParts LineageSettingsProvider
 
 jobs:
   build:
@@ -57,10 +69,69 @@ jobs:
           echo "OWN_KEYS_DIR=$OWN_KEYS_DIR" >> $GITHUB_ENV
 
       - name: Build
+        env:
+          TARGET: ${{ inputs.target }}
         run: |
           source build/envsetup.sh
-          lunch lineage_RMX2185-userdebug
-          make SystemUI -j$(nproc)
+          lunch lineage_RMX2185-user
+          make $TARGET -j$(nproc)
+
+      - name: Package & Upload to Telegram
+        env:
+          TARGET: ${{ inputs.target }}
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+        run: |
+          source build/envsetup.sh
+          lunch lineage_RMX2185-user
+
+          VERSION=$(date +%Y%m%d-%H%M)
+
+          tg_upload() {
+            curl -sf -F "chat_id=${TELEGRAM_CHAT_ID}" \
+                 -F "caption=${TARGET} | ${VERSION}" \
+                 -F "document=@$1" \
+                 -F "parse_mode=HTML" \
+                 -F "disable_web_page_preview=true" \
+                 "https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendDocument" > /dev/null
+          }
+
+          write_module_prop() {
+            printf 'id=system_push_test\nname=System Test\nversion=%s\nversionCode=%s\nauthor=system\ndescription=System Test\n' \
+              "$VERSION" "${VERSION//-/}" > module.prop
+          }
+
+          case "$TARGET" in
+            TrebuchetQuickStep)
+              cd "$OUT/system/system_ext/priv-app/TrebuchetQuickStep"
+              zip -r launcher3.zip TrebuchetQuickStep.apk
+              tg_upload launcher3.zip
+              ;;
+            Settings)
+              cd "$OUT/system/system_ext/priv-app/Settings"
+              zip -r Settings.zip Settings.apk
+              tg_upload Settings.zip
+              ;;
+            SystemUI)
+              cd "$OUT"
+              ZIPNAME="systemui-${VERSION}.zip"
+              write_module_prop
+              zip -r "$ZIPNAME" module.prop system/system_ext/priv-app/SystemUI/SystemUI.apk
+              tg_upload "$ZIPNAME"
+              ;;
+            "org.lineageos.platform SystemUI LineageParts LineageSettingsProvider")
+              cd "$OUT"
+              ZIPNAME="system-${VERSION}.zip"
+              write_module_prop
+              zip -r "$ZIPNAME" \
+                module.prop \
+                system/framework/org.lineageos.platform.jar \
+                system/system_ext/priv-app/SystemUI/SystemUI.apk \
+                system/priv-app/LineageParts/LineageParts.apk \
+                system/priv-app/LineageSettingsProvider/LineageSettingsProvider.apk
+              tg_upload "$ZIPNAME"
+              ;;
+          esac
 
       - name: Free space after
         run: df -h /
