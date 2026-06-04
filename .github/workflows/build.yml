@@ -94,6 +94,25 @@ jobs:
             lib32ncurses5-dev libncurses5 libncurses5-dev
           sudo apt-get install -y -qq python-is-python3
 
+      - name: Cache ccache
+        uses: actions/cache@v5
+        with:
+          path: ~/.ccache
+          key: ccache-lineage-18.1-${{ github.run_id }}
+          restore-keys: |
+            ccache-lineage-18.1-
+
+      - name: Setup ccache
+        run: |
+          mkdir -p ~/.ccache
+          ccache -M 5G
+          ccache -o compression=true
+          ccache -z
+          echo "USE_CCACHE=1" >> $GITHUB_ENV
+          echo "CCACHE_DIR=$HOME/.ccache" >> $GITHUB_ENV
+          echo "CCACHE_EXEC=$(command -v ccache)" >> $GITHUB_ENV
+          echo "CCACHE_COMPRESS=1" >> $GITHUB_ENV
+
       - name: Install repo
         run: |
           sudo wget -q https://storage.googleapis.com/git-repo-downloads/repo -O /usr/local/bin/repo
@@ -203,4 +222,8 @@ jobs:
       - name: Source size
         run: |
           du -sh --exclude=.git
+
+      - name: ccache stats
+        if: always()
+        run: ccache -s -v
 
