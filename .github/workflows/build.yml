@@ -119,9 +119,6 @@ jobs:
           TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
           TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
         run: |
-          source build/envsetup.sh
-          lunch lineage_RMX2185-user
-
           VERSION=$(date +%Y%m%d-%H%M)
 
           tg_upload() {
