@@ -44,6 +44,18 @@ jobs:
         run: |
           repo sync --force-sync -c --no-tags --optimized-fetch --prune -j$(nproc)
 
+      - name: Setup vendor keys
+        env:
+          VENDOR_KEYS: ${{ secrets.VENDOR_KEYS }}
+        run: |
+          echo "$VENDOR_KEYS" | base64 -d > vendor_keys.zip
+          unzip -o vendor_keys.zip
+          rm -f vendor_keys.zip
+          export OWN_KEYS_DIR="$PWD/vendor_keys"
+          sudo ln -sf "$OWN_KEYS_DIR/releasekey.pk8" "$OWN_KEYS_DIR/testkey.pk8"
+          sudo ln -sf "$OWN_KEYS_DIR/releasekey.x509.pem" "$OWN_KEYS_DIR/testkey.x509.pem"
+          echo "OWN_KEYS_DIR=$OWN_KEYS_DIR" >> $GITHUB_ENV
+
       - name: Build
         run: |
           source build/envsetup.sh
