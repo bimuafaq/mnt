@@ -18,50 +18,8 @@ jobs:
   build:
     runs-on: ubuntu-22.04
     steps:
-      - name: Inspect storage & free up disk space
+      - name: Free up disk space
         run: |
-          echo "==== df -hT ===="
-          df -hT
-
-          echo
-          echo "==== lsblk ===="
-          lsblk -f
-
-          echo
-          echo "==== findmnt ===="
-          findmnt -D
-
-          echo
-          echo "==== Candidate writable dirs ===="
-          for d in / /mnt /tmp /dev/shm /var/tmp /opt /home/runner /home/runner/work "$RUNNER_TEMP" "$GITHUB_WORKSPACE"; do
-            [ -z "$d" ] && continue
-            if [ -d "$d" ]; then
-              free=$(df -h "$d" 2>/dev/null | awk 'NR==2{print $4" free on "$1" ("$6")"}')
-              if touch "$d/.write_test" 2>/dev/null; then
-                writable="WRITABLE (no sudo)"
-                rm -f "$d/.write_test"
-              elif sudo -n touch "$d/.write_test" 2>/dev/null; then
-                writable="writable via sudo"
-                sudo rm -f "$d/.write_test"
-              else
-                writable="NOT writable"
-              fi
-              printf '%-30s  %-22s  %s\n' "$d" "$writable" "$free"
-            fi
-          done
-
-          echo
-          echo "==== Top 20 biggest preinstalled dirs ===="
-          sudo du -h -d1 /usr/local /opt /usr/share 2>/dev/null | sort -rh | head -20
-
-          echo
-          echo "==== /usr/local/lib breakdown ===="
-          sudo du -h -d2 /usr/local/lib 2>/dev/null | sort -rh | head -30
-
-          echo
-          echo "==== Before cleanup ===="
-          df -h /
-
           sudo rm -rf \
             /usr/share/dotnet \
             /usr/local/.ghcup \
@@ -74,10 +32,6 @@ jobs:
             /opt/google \
             /usr/local/aws-cli \
             /opt/pipx
-
-          echo
-          echo "==== After cleanup ===="
-          df -h /
 
       - name: Checkout
         uses: actions/checkout@v4
