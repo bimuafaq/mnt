@@ -116,7 +116,8 @@ jobs:
           TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
           TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
         run: |
-          VERSION=$(date +%Y%m%d-%H%M)
+          VERSION=$(date +%y%m%d-%H%M)
+          OUT="out/target/product/RMX2185"
 
           tg_upload() {
             curl -sf -F "chat_id=${TELEGRAM_CHAT_ID}" \
@@ -125,11 +126,6 @@ jobs:
                  -F "parse_mode=HTML" \
                  -F "disable_web_page_preview=true" \
                  "https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendDocument" > /dev/null
-          }
-
-          write_module_prop() {
-            printf 'id=system_push_test\nname=System Test\nversion=%s\nversionCode=%s\nauthor=system\ndescription=System Test\n' \
-              "$VERSION" "${VERSION//-/}" > module.prop
           }
 
           case "$TARGET" in
@@ -146,14 +142,16 @@ jobs:
             SystemUI)
               cd "$OUT"
               ZIPNAME="systemui-${VERSION}.zip"
-              write_module_prop
+              printf 'id=system_push_test\nname=System Test\nversion=%s\nversionCode=%s\nauthor=system\ndescription=System Test\n' \
+                "$VERSION" "${VERSION//-/}" > module.prop
               zip -r "$ZIPNAME" module.prop system/system_ext/priv-app/SystemUI/SystemUI.apk
               tg_upload "$ZIPNAME"
               ;;
             "org.lineageos.platform SystemUI LineageParts LineageSettingsProvider")
               cd "$OUT"
-              ZIPNAME="system-${VERSION}.zip"
-              write_module_prop
+              ZIPNAME="system-test-${VERSION}.zip"
+              printf 'id=system_push_test\nname=System Test\nversion=%s\nversionCode=%s\nauthor=system\ndescription=System Test\n' \
+                "$VERSION" "${VERSION//-/}" > module.prop
               zip -r "$ZIPNAME" \
                 module.prop \
                 system/framework/org.lineageos.platform.jar \
