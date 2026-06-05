@@ -82,16 +82,13 @@ jobs:
 
       - name: Repo init
         run: |
-          repo init --depth=1 --no-clone-bundle --partial-clone --clone-filter=blob:none \
-            --manifest-depth=1 -g default,-mips,-darwin,-notdefault \
-            -u https://github.com/LineageOS/android.git -b lineage-18.1
+          repo init --depth=1 -u https://github.com/LineageOS/android.git -b lineage-18.1
           mkdir -p .repo/local_manifests
           cp local_manifest.xml .repo/local_manifests/
 
       - name: Repo sync
         run: |
-          repo sync --force-sync -c --no-clone-bundle --no-tags \
-            --optimized-fetch --prune --fail-fast -j$(nproc)
+          repo sync --force-sync -c --no-tags --optimized-fetch --prune -j$(nproc)
 
       - name: Setup vendor keys
         env:
