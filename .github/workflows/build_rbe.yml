@@ -125,6 +125,7 @@ jobs:
         run: |
           rm -rf prebuilts/remoteexecution-client
           git clone --depth=1 https://android.googlesource.com/platform/prebuilts/remoteexecution-client prebuilts/remoteexecution-client
+          rm -f prebuilts/remoteexecution-client/Android.bp
           bash rbe_fix/scripts/build_patched_reclient.sh .
           patch -p1 < rbe_fix/patches/aosp11-rbe-buildbuddyfix-defaults.patch
           echo "USE_RBE=1" >> $GITHUB_ENV
