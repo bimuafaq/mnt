@@ -83,12 +83,15 @@ jobs:
       - name: Repo init
         run: |
           repo init --depth=1 -u https://github.com/LineageOS/android.git -b lineage-18.1
-          mkdir -p .repo/local_manifests
-          cp local_manifest.xml .repo/local_manifests/
+          git clone --depth=1 https://github.com/bimuafaq/local_manifests .repo/local_manifests
 
-      - name: Repo sync
+      - name: Repo sync and apply patches
         run: |
           repo sync --force-sync -c --no-tags --optimized-fetch --prune -j$(nproc)
+          df -h
+          .repo/local_manifests/patches/patches_apply.sh
+          rm -rf .repo
+          df -h
 
       - name: Setup vendor keys
         env:
