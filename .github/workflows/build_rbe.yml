@@ -151,7 +151,23 @@ jobs:
         env:
           TARGET: ${{ inputs.target }}
           NINJA_HIGHMEM_NUM_JOBS: 1
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
         run: |
+          (
+            while true; do
+              CPU=$(top -bn1 | grep "Cpu(s)" | awk '{print $2+$4"%"}')
+              RAM=$(free -m | awk '/^Mem:/{printf "%dMB/%dMB", $3, $2}')
+              SWAP=$(free -m | awk '/^Swap:/{printf "%dMB/%dMB", $3, $2}')
+              DISK=$(df -h / | tail -1 | awk '{print $3"/"$2}')
+              OUTS=$(du -sh out/ 2>/dev/null || echo "N/A")
+              curl -s "https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage" \
+                -d "chat_id=${TELEGRAM_CHAT_ID}" \
+                -d "text=[Build] CPU ${CPU} | RAM ${RAM} | Swap ${SWAP} | Disk ${DISK} | out ${OUTS}" \
+                -o /dev/null 2>&1
+              sleep 120
+            done
+          ) &
           source build/envsetup.sh
           lunch lineage_RMX2185-user
           make $TARGET -j$(nproc)
