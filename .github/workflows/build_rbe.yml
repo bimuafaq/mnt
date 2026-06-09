@@ -12,6 +12,7 @@ on:
           - SystemUI
           - TrebuchetQuickStep
           - Settings
+          - bacon
           - org.lineageos.platform SystemUI LineageParts LineageSettingsProvider
 
 jobs:
