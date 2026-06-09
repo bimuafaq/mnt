@@ -60,7 +60,7 @@ jobs:
           rm -rf /home/runner/.npm/_cacache
           
           echo "Listing disk space after cleanup:"
-          df -h && exit 1
+          df -h
 
       - name: Checkout
         uses: actions/checkout@v4
