@@ -18,20 +18,49 @@ jobs:
   build:
     runs-on: ubuntu-22.04
     steps:
-      - name: Free up disk space
+      - name: Free up disk
         run: |
+          echo "Listing disk space before cleanup:"
+          df -h
           sudo rm -rf \
-            /usr/share/dotnet \
+            /usr/local/lib/android \
             /usr/local/.ghcup \
-            /usr/share/swift \
             /usr/local/julia* \
+            /usr/local/aws-cli \
+            /usr/local/aws-sam-cli \
+            /usr/local/n \
+            /usr/local/sqlpackage \
+            /usr/local/share/chromium \
+            /usr/local/share/powershell \
+            /usr/share/dotnet \
+            /usr/share/swift \
             /usr/share/miniconda \
-            /opt/az \
             /usr/share/az_* \
+            /usr/share/sbt \
+            /usr/share/gradle* \
+            /usr/share/kotlinc \
+            /opt/hostedtoolcache/CodeQL \
+            /opt/hostedtoolcache/PyPy \
+            /opt/hostedtoolcache/Ruby \
+            /opt/hostedtoolcache/go \
+            /opt/hostedtoolcache/node \
+            /opt/az \
             /opt/microsoft \
             /opt/google \
-            /usr/local/aws-cli \
-            /opt/pipx
+            /opt/pipx \
+            /usr/lib/google-cloud-sdk \
+            /usr/lib/heroku \
+            /usr/lib/firefox \
+            /usr/lib/mono \
+            /usr/lib/llvm-1* \
+            /home/linuxbrew
+
+          rm -rf /home/runner/.rustup /home/runner/.cargo
+          npm cache clean --force
+          rm -rf /home/runner/.npm/_cacache
+          
+          echo "Listing disk space after cleanup:"
+          df -h && exit 1
 
       - name: Checkout
         uses: actions/checkout@v4
