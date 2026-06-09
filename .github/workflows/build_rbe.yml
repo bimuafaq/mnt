@@ -1,0 +1,212 @@
+name: Build AOSP Module (RBE)
+
+on:
+  workflow_dispatch:
+    inputs:
+      target:
+        description: 'Module to build'
+        type: choice
+        required: true
+        default: SystemUI
+        options:
+          - SystemUI
+          - TrebuchetQuickStep
+          - Settings
+          - org.lineageos.platform SystemUI LineageParts LineageSettingsProvider
+
+jobs:
+  build:
+    runs-on: ubuntu-22.04
+    steps:
+      - name: Set Swap Space
+        uses: pierotofy/set-swap-space@master
+        with:
+          swap-size-gb: 16
+
+      - name: Free up disk
+        run: |
+          echo "Listing disk space before cleanup:"
+          df -h
+          sudo rm -rf \
+            /usr/local/lib/android \
+            /usr/local/.ghcup \
+            /usr/local/julia* \
+            /usr/local/aws-cli \
+            /usr/local/aws-sam-cli \
+            /usr/local/n \
+            /usr/local/sqlpackage \
+            /usr/local/share/chromium \
+            /usr/local/share/powershell \
+            /usr/share/dotnet \
+            /usr/share/swift \
+            /usr/share/miniconda \
+            /usr/share/az_* \
+            /usr/share/sbt \
+            /usr/share/gradle* \
+            /usr/share/kotlinc \
+            /opt/hostedtoolcache/CodeQL \
+            /opt/hostedtoolcache/PyPy \
+            /opt/hostedtoolcache/Ruby \
+            /opt/hostedtoolcache/go \
+            /opt/hostedtoolcache/node \
+            /opt/hostedtoolcache/Python \
+            /opt/az \
+            /opt/microsoft \
+            /opt/google \
+            /opt/pipx \
+            /usr/lib/google-cloud-sdk \
+            /usr/lib/heroku \
+            /usr/lib/firefox \
+            /usr/lib/mono \
+            /usr/lib/llvm-1* \
+            /home/linuxbrew
+
+          rm -rf /home/runner/.rustup /home/runner/.cargo
+          npm cache clean --force
+          rm -rf /home/runner/.npm/_cacache
+
+          echo "Listing disk space after cleanup:"
+          df -h
+
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install build packages
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq \
+            bc bison build-essential ccache curl flex g++-multilib gcc-multilib \
+            git git-lfs gnupg gperf imagemagick protobuf-compiler python3-protobuf \
+            lib32readline-dev lib32z1-dev libdw-dev libelf-dev libgnutls28-dev lz4 \
+            libsdl1.2-dev libssl-dev libxml2 libxml2-utils lzop pngcrush rsync \
+            schedtool squashfs-tools xsltproc xxd zip zlib1g-dev \
+            lib32ncurses5-dev libncurses5 libncurses5-dev
+          sudo apt-get install -y -qq python-is-python3
+
+      - name: Install repo
+        run: |
+          sudo wget -q https://storage.googleapis.com/git-repo-downloads/repo -O /usr/local/bin/repo
+          sudo chmod a+x /usr/local/bin/repo
+          repo --version
+
+      - name: Git config
+        run: |
+          git config --global user.name "ci"
+          git config --global user.email "ci@ci.com"
+          git lfs install
+          git config --global trailer.changeid.key "Change-Id"
+
+      - name: Repo init
+        run: |
+          repo init --depth=1 -u https://github.com/LineageOS/android.git -b lineage-18.1
+          git clone --depth=1 https://github.com/bimuafaq/local_manifests .repo/local_manifests
+
+      - name: Repo sync and apply patches
+        run: |
+          repo sync --force-sync -c --no-tags --optimized-fetch --prune -j$(nproc)
+          df -h
+          .repo/local_manifests/patches/patches_apply.sh
+          rm -rf .repo
+          df -h
+
+      - name: Setup vendor keys
+        env:
+          VENDOR_KEYS: ${{ secrets.VENDOR_KEYS }}
+        run: |
+          echo "$VENDOR_KEYS" | base64 -d > vendor_keys.zip
+          unzip -o vendor_keys.zip
+          rm -f vendor_keys.zip
+          export OWN_KEYS_DIR="$PWD/vendor_keys"
+          sudo ln -sf "$OWN_KEYS_DIR/releasekey.pk8" "$OWN_KEYS_DIR/testkey.pk8"
+          sudo ln -sf "$OWN_KEYS_DIR/releasekey.x509.pem" "$OWN_KEYS_DIR/testkey.x509.pem"
+          echo "OWN_KEYS_DIR=$OWN_KEYS_DIR" >> $GITHUB_ENV
+
+      - name: Setup RBE
+        run: |
+          cp -r "$GITHUB_WORKSPACE/rbe_fix" .
+          bash rbe_fix/scripts/build_patched_reclient.sh .
+          patch -p1 < rbe_fix/patches/aosp11-rbe-buildbuddyfix-defaults.patch
+          echo "USE_RBE=1" >> $GITHUB_ENV
+          echo "RBE_service=${{ secrets.RBE_SERVICE }}" >> $GITHUB_ENV
+          echo "RBE_remote_headers=x-buildbuddy-api-key=${{ secrets.BUILDBUDDY_API_KEY }}" >> $GITHUB_ENV
+          echo "RBE_use_rpc_credentials=false" >> $GITHUB_ENV
+          echo "RBE_service_no_auth=true" >> $GITHUB_ENV
+          echo "NINJA_REMOTE_NUM_JOBS=128" >> $GITHUB_ENV
+          echo "RBE_use_unified_downloads=true" >> $GITHUB_ENV
+          echo "RBE_use_unified_uploads=true" >> $GITHUB_ENV
+          echo "RBE_CXX_EXEC_STRATEGY=remote_local_fallback" >> $GITHUB_ENV
+          echo "RBE_JAVAC_EXEC_STRATEGY=remote_local_fallback" >> $GITHUB_ENV
+          echo "RBE_R8_EXEC_STRATEGY=remote_local_fallback" >> $GITHUB_ENV
+          echo "RBE_D8_EXEC_STRATEGY=remote_local_fallback" >> $GITHUB_ENV
+          echo "RBE_CXX=1" >> $GITHUB_ENV
+          echo "RBE_JAVAC=1" >> $GITHUB_ENV
+          echo "RBE_R8=1" >> $GITHUB_ENV
+          echo "RBE_D8=1" >> $GITHUB_ENV
+
+      - name: Build
+        env:
+          TARGET: ${{ inputs.target }}
+          NINJA_HIGHMEM_NUM_JOBS: 1
+        run: |
+          source build/envsetup.sh
+          lunch lineage_RMX2185-user
+          make $TARGET -j$(nproc)
+
+      - name: Package & Upload to Telegram
+        env:
+          TARGET: ${{ inputs.target }}
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+        run: |
+          VERSION=$(date +%y%m%d-%H%M)
+          OUT="out/target/product/RMX2185"
+
+          tg_upload() {
+            curl -sf -F "chat_id=${TELEGRAM_CHAT_ID}" \
+                 -F "caption=${TARGET} | ${VERSION}" \
+                 -F "document=@$1" \
+                 -F "parse_mode=HTML" \
+                 -F "disable_web_page_preview=true" \
+                 "https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendDocument" > /dev/null
+          }
+
+          case "$TARGET" in
+            TrebuchetQuickStep)
+              cd "$OUT/system/system_ext/priv-app/TrebuchetQuickStep"
+              zip -r launcher3.zip TrebuchetQuickStep.apk
+              tg_upload launcher3.zip
+              ;;
+            Settings)
+              cd "$OUT/system/system_ext/priv-app/Settings"
+              zip -r Settings.zip Settings.apk
+              tg_upload Settings.zip
+              ;;
+            SystemUI)
+              cd "$OUT"
+              ZIPNAME="systemui-${VERSION}.zip"
+              printf 'id=system_push_test\nname=System Test\nversion=%s\nversionCode=%s\nauthor=system\ndescription=System Test\n' \
+                "$VERSION" "${VERSION//-/}" > module.prop
+              zip -r "$ZIPNAME" module.prop system/system_ext/priv-app/SystemUI/SystemUI.apk
+              tg_upload "$ZIPNAME"
+              ;;
+            "org.lineageos.platform SystemUI LineageParts LineageSettingsProvider")
+              cd "$OUT"
+              ZIPNAME="system-test-${VERSION}.zip"
+              printf 'id=system_push_test\nname=System Test\nversion=%s\nversionCode=%s\nauthor=system\ndescription=System Test\n' \
+                "$VERSION" "${VERSION//-/}" > module.prop
+              zip -r "$ZIPNAME" \
+                module.prop \
+                system/framework/org.lineageos.platform.jar \
+                system/system_ext/priv-app/SystemUI/SystemUI.apk \
+                system/priv-app/LineageParts/LineageParts.apk \
+                system/priv-app/LineageSettingsProvider/LineageSettingsProvider.apk
+              tg_upload "$ZIPNAME"
+              ;;
+          esac
+
+      - name: Free space after
+        run: df -h /
+
+      - name: Source size
+        run: |
+          du -sh --exclude=.git

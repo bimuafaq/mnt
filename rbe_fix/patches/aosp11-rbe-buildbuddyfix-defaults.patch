@@ -1,0 +1,66 @@
+--- a/build/make/core/rbe.mk
++++ b/build/make/core/rbe.mk
+@@ -19,7 +19,7 @@
+   ifdef RBE_DIR
+     rbe_dir := $(RBE_DIR)
+   else
+-    rbe_dir := prebuilts/remoteexecution-client/live/
++    rbe_dir := prebuilts/remoteexecution-client/buildbuddyfix/
+   endif
+ 
+   ifdef RBE_CXX_EXEC_STRATEGY
+@@ -56,7 +58,9 @@
+   cxx_platform := $(platform)",Pool=default"
+   java_r8_d8_platform := $(platform)",Pool=java16"
+ 
+-  RBE_WRAPPER := $(rbe_dir)/rewrapper
++  # Some remote executors reject actions with working_directory=".".
++  # Canonicalizing the working dir helps once the client itself is patched.
++  RBE_WRAPPER := $(rbe_dir)/rewrapper -canonicalize_working_dir
+   RBE_CXX := --labels=type=compile,lang=cpp,compiler=clang --env_var_allowlist=PWD --exec_strategy=$(cxx_rbe_exec_strategy) --platform=$(cxx_platform) --compare=$(cxx_compare)
+ 
+   # Append rewrapper to existing *_WRAPPER variables so it's possible to
+--- a/build/soong/remoteexec/remoteexec.go
++++ b/build/soong/remoteexec/remoteexec.go
+@@ -38,7 +38,7 @@
+ 	DefaultImage = "docker://gcr.io/androidbuild-re-dockerimage/android-build-remoteexec-image@sha256:582efb38f0c229ea39952fff9e132ccbe183e14869b39888010dacf56b360d62"
+ 
+ 	// DefaultWrapperPath is the default path to the remote execution wrapper.
+-	DefaultWrapperPath = "prebuilts/remoteexecution-client/live/rewrapper"
++	DefaultWrapperPath = "prebuilts/remoteexecution-client/buildbuddyfix/rewrapper"
+ 
+ 	// DefaultPool is the name of the pool to use for remote execution when none is specified.
+ 	DefaultPool = "default"
+--- a/build/soong/remoteexec/remoteexec_test.go
++++ b/build/soong/remoteexec/remoteexec_test.go
+@@ -76,7 +76,7 @@
+ 			PoolKey:           "default",
+ 		},
+ 	}
+-	want := fmt.Sprintf("prebuilts/remoteexecution-client/live/rewrapper --labels=compiler=clang,lang=cpp,type=compile --platform=\"Pool=default,container-image=%s\" --exec_strategy=local --inputs=$in --output_files=$out -- ", DefaultImage)
++	want := fmt.Sprintf("prebuilts/remoteexecution-client/buildbuddyfix/rewrapper --labels=compiler=clang,lang=cpp,type=compile --platform=\"Pool=default,container-image=%s\" --exec_strategy=local --inputs=$in --output_files=$out -- ", DefaultImage)
+ 	if got := params.NoVarTemplate(android.NullConfig("")); got != want {
+ 		t.Errorf("NoVarTemplate() returned\n%s\nwant\n%s", got, want)
+ 	}
+--- a/build/soong/ui/build/config.go
++++ b/build/soong/ui/build/config.go
+@@ -889,7 +889,7 @@
+ 	if v, ok := c.environ.Get("RBE_DIR"); ok {
+ 		return v
+ 	}
+-	return "prebuilts/remoteexecution-client/live/"
++	return "prebuilts/remoteexecution-client/buildbuddyfix/"
+ }
+ 
+ func (c *configImpl) rbeReproxy() string {
+--- a/build/make/rbesetup.sh
++++ b/build/make/rbesetup.sh
+@@ -39,7 +39,7 @@
+ function use_rbe() {
+   local RBE_LOG_DIR="/tmp"
+-  local RBE_BINARIES_DIR="prebuilts/remoteexecution-client/latest/"
++  local RBE_BINARIES_DIR="prebuilts/remoteexecution-client/buildbuddyfix/"
+   local DOCKER_IMAGE="gcr.io/androidbuild-re-dockerimage/android-build-remoteexec-image@sha256:582efb38f0c229ea39952fff9e132ccbe183e14869b39888010dacf56b360d62"
+
+   # Do not set an invocation-ID and let reproxy auto-generate one.
+   USE_RBE="true" \
