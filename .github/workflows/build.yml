@@ -160,17 +160,33 @@ jobs:
             SWAP=$(free -m | awk '/^Swap:/{printf "%dMB/%dMB", $3, $2}')
             DISK=$(df -h / | tail -1 | awk '{print $3"/"$2}')
             OUTS=$(du -sh out/ 2>/dev/null || echo "N/A")
-            PCT=$(tail -100 /tmp/build.log | grep -oP '\[\K[0-9]+%' | tail -1)
+          LINE=$(tail -100 /tmp/build.log | grep -oP '\[\s*\d+%\s*\d+/\d+\]' | tail -1)
+            PCT=$(echo "$LINE" | grep -oP '\d+(?=%)')
+            JOBS=$(echo "$LINE" | grep -oP '\d+/\d+' | tail -1)
+            BAR=""
+            if [[ -n "$PCT" ]]; then
+              FILL=$(( PCT / 5 ))
+              EMPTY=$(( 20 - FILL ))
+              BAR=$(printf "%${FILL}s" | tr ' ' '#')$(printf "%${EMPTY}s" | tr ' ' '-')
+            fi
+            CPU=$(top -bn1 | grep "Cpu(s)" | awk '{print $2+$4"%"}')
+            RAM=$(free -m | awk '/^Mem:/{printf "%dMB/%dMB", $3, $2}')
+            SWAP=$(free -m | awk '/^Swap:/{printf "%dMB/%dMB", $3, $2}')
+            DISK=$(df -h / | tail -1 | awk '{print $3"/"$2}')
+            OUTS=$(du -sh out/ 2>/dev/null || echo "N/A")
+            MSG=$(printf "Build %s%% [%s] %s\nCPU   %s     RAM  %s\nSwap  %s  Disk %s\nOut   %s" \
+              "${PCT:-0}" "${BAR:---------------------}" "${JOBS:-?/?}" \
+              "${CPU}" "${RAM}" "${SWAP}" "${DISK}" "${OUTS}")
             if [[ -z "$MSG_ID" ]]; then
               RESP=$(curl -s "https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage" \
                 -d "chat_id=${TELEGRAM_CHAT_ID}" \
-                -d "text=Build ${PCT:-0} | CPU ${CPU} | RAM ${RAM} | Swap ${SWAP} | Disk ${DISK} | out ${OUTS}")
+                --data-urlencode "text=${MSG}")
               MSG_ID=$(echo "$RESP" | grep -oP '"message_id":\K[0-9]+')
             elif [[ "$PCT" != "$LAST_PCT" ]]; then
               curl -s "https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/editMessageText" \
                 -d "chat_id=${TELEGRAM_CHAT_ID}" \
                 -d "message_id=${MSG_ID}" \
-                -d "text=Build ${PCT:-0} | CPU ${CPU} | RAM ${RAM} | Swap ${SWAP} | Disk ${DISK} | out ${OUTS}" \
+                --data-urlencode "text=${MSG}" \
                 -o /dev/null 2>&1
               LAST_PCT="$PCT"
             fi
