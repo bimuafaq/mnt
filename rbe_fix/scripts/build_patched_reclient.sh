@@ -90,3 +90,28 @@ cat <<EOF
 patched client created at:
   ${OUT_DIR}
 EOF
+
+# Cleanup: hapus Go installations, tarball, dan reclient source
+echo "[+] Cleaning up Go installations..."
+for go_dir in /tmp/go-*; do
+  if [[ -d "$go_dir" ]]; then
+    echo "    removing ${go_dir}"
+    rm -rf "${go_dir}"
+  fi
+done
+
+echo "[+] Cleaning up Go tarballs..."
+for go_tar in /tmp/go*.linux-amd64.tar.gz; do
+  if [[ -f "$go_tar" ]]; then
+    echo "    removing ${go_tar}"
+    rm -f "$go_tar"
+  fi
+done
+
+echo "[+] Cleaning up reclient source..."
+if [[ -d "${AOSP_ROOT}/.tmp/reclient-buildbuddyfix-src" ]]; then
+  echo "    removing ${AOSP_ROOT}/.tmp/reclient-buildbuddyfix-src"
+  rm -rf "${AOSP_ROOT}/.tmp/reclient-buildbuddyfix-src"
+fi
+
+echo "[+] Build + cleanup complete"
