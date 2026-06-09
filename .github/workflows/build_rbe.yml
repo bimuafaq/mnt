@@ -123,7 +123,6 @@ jobs:
 
       - name: Setup RBE
         run: |
-          cp -r "$GITHUB_WORKSPACE/rbe_fix" .
           bash rbe_fix/scripts/build_patched_reclient.sh .
           patch -p1 < rbe_fix/patches/aosp11-rbe-buildbuddyfix-defaults.patch
           echo "USE_RBE=1" >> $GITHUB_ENV
@@ -142,6 +141,7 @@ jobs:
           echo "RBE_JAVAC=1" >> $GITHUB_ENV
           echo "RBE_R8=1" >> $GITHUB_ENV
           echo "RBE_D8=1" >> $GITHUB_ENV
+    
 
       - name: Build
         env:
