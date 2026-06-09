@@ -34,7 +34,11 @@ GO_BIN="${GO_DIR}/bin/go"
 echo "[+] Using Go from ${GO_BIN}"
 "${GO_BIN}" version
 
-ERRATA_DIR="${SCRIPT_DIR}/.."
+if [[ ! -d "${LIVE_DIR}" ]]; then
+  echo "missing bundled reclient dir: ${LIVE_DIR}" >&2
+  exit 1
+fi
+
 mkdir -p "$(dirname "${RECLIENT_DIR}")"
 
 if [[ ! -d "${RECLIENT_DIR}/.git" ]]; then
@@ -51,11 +55,8 @@ fi
 mkdir -p "${RECLIENT_DIR}/internal/pkg/version"
 cp "${RECLIENT_DIR}/go.mod" "${RECLIENT_DIR}/internal/pkg/version/go.mod.txt"
 
-if [[ -f "${LIVE_DIR}/version.txt" ]]; then
-  BASE_VERSION="$(cat "${LIVE_DIR}/version.txt")"
-else
-  BASE_VERSION="$(git -C "${RECLIENT_DIR}" describe --tags --always 2>/dev/null || echo "unknown")"
-fi
+BASE_VERSION="$(cat "${LIVE_DIR}/version.txt")"
+printf '%s' "${BASE_VERSION}-buildbuddyfix" > "${RECLIENT_DIR}/internal/pkg/version/version.txt"
 
 CLANG_JSON="$(find "${RECLIENT_DIR}/llvm" -maxdepth 1 -name 'clang-options-*.json' | head -n 1)"
 if [[ -z "${CLANG_JSON}" ]]; then
@@ -80,9 +81,7 @@ mkdir -p "${RECLIENT_DIR}/out"
 
 rm -rf "${OUT_DIR}"
 mkdir -p "${OUT_DIR}"
-if [[ -d "${LIVE_DIR}" ]]; then
-  cp -a "${LIVE_DIR}/." "${OUT_DIR}/"
-fi
+cp -a "${LIVE_DIR}/." "${OUT_DIR}/"
 cp "${RECLIENT_DIR}/out/rewrapper" "${OUT_DIR}/rewrapper"
 cp "${RECLIENT_DIR}/out/reproxy" "${OUT_DIR}/reproxy"
 printf '%s\n' "${BASE_VERSION}-buildbuddyfix" > "${OUT_DIR}/version.txt"
