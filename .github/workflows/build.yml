@@ -18,6 +18,11 @@ jobs:
   build:
     runs-on: ubuntu-22.04
     steps:
+      - name: Set Swap Space
+        uses: pierotofy/set-swap-space@master
+        with:
+          swap-size-gb: 8
+
       - name: Free up disk
         run: |
           echo "Listing disk space before cleanup:"
@@ -44,6 +49,7 @@ jobs:
             /opt/hostedtoolcache/Ruby \
             /opt/hostedtoolcache/go \
             /opt/hostedtoolcache/node \
+            /opt/hostedtoolcache/Python \
             /opt/az \
             /opt/microsoft \
             /opt/google \
@@ -137,6 +143,7 @@ jobs:
       - name: Build
         env:
           TARGET: ${{ inputs.target }}
+          NINJA_HIGHMEM_NUM_JOBS: 1
         run: |
           source build/envsetup.sh
           lunch lineage_RMX2185-user
