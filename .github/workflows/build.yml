@@ -147,23 +147,28 @@ jobs:
           TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
           TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
         run: |
-          (
-            while true; do
-              CPU=$(top -bn1 | grep "Cpu(s)" | awk '{print $2+$4"%"}')
-              RAM=$(free -m | awk '/^Mem:/{printf "%dMB/%dMB", $3, $2}')
-              SWAP=$(free -m | awk '/^Swap:/{printf "%dMB/%dMB", $3, $2}')
-              DISK=$(df -h / | tail -1 | awk '{print $3"/"$2}')
-              OUTS=$(du -sh out/ 2>/dev/null || echo "N/A")
-              curl -s "https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage" \
-                -d "chat_id=${TELEGRAM_CHAT_ID}" \
-                -d "text=[Build] CPU ${CPU} | RAM ${RAM} | Swap ${SWAP} | Disk ${DISK} | out ${OUTS}" \
-                -o /dev/null 2>&1
-              sleep 120
-            done
-          ) &
           source build/envsetup.sh
           lunch lineage_RMX2185-user
-          make $TARGET -j$(nproc)
+          make $TARGET -j$(nproc) 2>&1 | tee /tmp/build.log &
+          BUILD_PID=$!
+          LAST_PCT=""
+          while kill -0 $BUILD_PID 2>/dev/null; do
+            sleep 120
+            CPU=$(top -bn1 | grep "Cpu(s)" | awk '{print $2+$4"%"}')
+            RAM=$(free -m | awk '/^Mem:/{printf "%dMB/%dMB", $3, $2}')
+            SWAP=$(free -m | awk '/^Swap:/{printf "%dMB/%dMB", $3, $2}')
+            DISK=$(df -h / | tail -1 | awk '{print $3"/"$2}')
+            OUTS=$(du -sh out/ 2>/dev/null || echo "N/A")
+            PCT=$(tail -100 /tmp/build.log | grep -oP '\[\K[0-9]+%' | tail -1)
+            if [[ "$PCT" != "$LAST_PCT" ]]; then
+              curl -s "https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage" \
+                -d "chat_id=${TELEGRAM_CHAT_ID}" \
+                -d "text=[Build ${PCT:-?}] CPU ${CPU} | RAM ${RAM} | Swap ${SWAP} | Disk ${DISK} | out ${OUTS}" \
+                -o /dev/null 2>&1
+              LAST_PCT="$PCT"
+            fi
+          done
+          wait $BUILD_PID
 
       - name: Package & Upload to Telegram
         env:
