@@ -13,6 +13,7 @@ on:
           - TrebuchetQuickStep
           - Settings
           - selinux_policy
+          - bacon
           - org.lineageos.platform SystemUI LineageParts LineageSettingsProvider
 
 jobs:
@@ -127,6 +128,7 @@ jobs:
         run: |
           repo sync --force-sync -c --no-tags --optimized-fetch --prune -j$(nproc)
           df -h
+          sed -i '/permissive domains not allowed in user builds/,/fi/{/exit 1/d}' system/sepolicy/Android.mk
           rm -rf .repo
           df -h
 
