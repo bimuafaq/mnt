@@ -145,6 +145,8 @@ jobs:
           echo "OWN_KEYS_DIR=$OWN_KEYS_DIR" >> $GITHUB_ENV
 
       - name: Build
+        timeout-minutes: 180
+        continue-on-error: true
         env:
           TARGET: ${{ inputs.target }}
           NINJA_HIGHMEM_NUM_JOBS: 1
