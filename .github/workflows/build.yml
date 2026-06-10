@@ -118,7 +118,9 @@ jobs:
       - name: Repo init
         run: |
           repo init --depth=1 -u https://github.com/LineageOS/android.git -b lineage-17.1
-          git clone --depth=1 https://github.com/bimuafaq/local_manifests .repo/local_manifests
+          mkdir -p .repo/local_manifests
+          mv device.xml .repo/local_manifests
+          # git clone --depth=1 https://github.com/bimuafaq/local_manifests .repo/local_manifests
 
       - name: Repo sync and apply patches
         run: |
