@@ -197,64 +197,8 @@ jobs:
           done
           wait $BUILD_PID
 
-      - name: Package & Upload to Telegram
-        env:
-          TARGET: ${{ inputs.target }}
-          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
-          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
-        run: |
-          VERSION=$(date +%y%m%d-%H%M)
-          OUT="out/target/product/RMX2185"
-
-          tg_upload() {
-            curl -sf -F "chat_id=${TELEGRAM_CHAT_ID}" \
-                 -F "caption=${TARGET} | ${VERSION}" \
-                 -F "document=@$1" \
-                 -F "parse_mode=HTML" \
-                 -F "disable_web_page_preview=true" \
-                 "https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendDocument" > /dev/null
-          }
-
-          case "$TARGET" in
-            TrebuchetQuickStep)
-              cd "$OUT/system/system_ext/priv-app/TrebuchetQuickStep"
-              zip -r launcher3.zip TrebuchetQuickStep.apk
-              tg_upload launcher3.zip
-              ;;
-            Settings)
-              cd "$OUT/system/system_ext/priv-app/Settings"
-              zip -r Settings.zip Settings.apk
-              tg_upload Settings.zip
-              ;;
-            SystemUI)
-              cd "$OUT"
-              ZIPNAME="systemui-${VERSION}.zip"
-              printf 'id=system_push_test\nname=System Test\nversion=%s\nversionCode=%s\nauthor=system\ndescription=System Test\n' \
-                "$VERSION" "${VERSION//-/}" > module.prop
-              zip -r "$ZIPNAME" module.prop system/system_ext/priv-app/SystemUI/SystemUI.apk
-              tg_upload "$ZIPNAME"
-              ;;
-            "org.lineageos.platform SystemUI LineageParts LineageSettingsProvider")
-              cd "$OUT"
-              ZIPNAME="system-test-${VERSION}.zip"
-              printf 'id=system_push_test\nname=System Test\nversion=%s\nversionCode=%s\nauthor=system\ndescription=System Test\n' \
-                "$VERSION" "${VERSION//-/}" > module.prop
-              zip -r "$ZIPNAME" \
-                module.prop \
-                system/framework/org.lineageos.platform.jar \
-                system/system_ext/priv-app/SystemUI/SystemUI.apk \
-                system/priv-app/LineageParts/LineageParts.apk \
-                system/priv-app/LineageSettingsProvider/LineageSettingsProvider.apk
-              tg_upload "$ZIPNAME"
-              ;;
-          esac
-
       - name: Free space after
         run: df -h /
-
-      - name: Source size
-        run: |
-          du -sh --exclude=.git
 
       - name: ccache stats
         if: always()
