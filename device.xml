@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <manifest>
 
-  <project path="device/realme/RMX2185" name="bimuafaq/device_realme_RMX2185" remote="github" revision="lineage-18.1" />
+  <project path="device/realme/RMX2185" name="bimuafaq/device_realme_RMX2185" remote="github" revision="lineage-17.1" />
   <project path="vendor/realme/RMX2185" name="bimuafaq/vendor_realme_RMX2185" remote="github" revision="lineage-18.1" />
   <project path="kernel/realme/RMX2185" name="bimuafaq/kernel_realme_RMX2185" remote="github" revision="lineage-17.1" />
 
