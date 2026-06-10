@@ -126,7 +126,6 @@ jobs:
         run: |
           repo sync --force-sync -c --no-tags --optimized-fetch --prune -j$(nproc)
           df -h
-          .repo/local_manifests/patches/patches_apply.sh
           rm -rf .repo
           df -h
 
