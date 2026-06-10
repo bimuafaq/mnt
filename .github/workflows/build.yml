@@ -21,7 +21,7 @@ jobs:
       - name: Set Swap Space
         uses: pierotofy/set-swap-space@master
         with:
-          swap-size-gb: 16
+          swap-size-gb: 4
 
       - name: Free up disk
         run: |
@@ -87,9 +87,9 @@ jobs:
         uses: actions/cache@v5
         with:
           path: ~/.ccache
-          key: ccache-lineage-18.1-${{ github.run_id }}
+          key: ccache-lineage-17.1-${{ github.run_id }}
           restore-keys: |
-            ccache-lineage-18.1-
+            ccache-lineage-17.1-
 
       - name: Setup ccache
         run: |
@@ -117,7 +117,7 @@ jobs:
 
       - name: Repo init
         run: |
-          repo init --depth=1 -u https://github.com/LineageOS/android.git -b lineage-18.1
+          repo init --depth=1 -u https://github.com/LineageOS/android.git -b lineage-17.1
           git clone --depth=1 https://github.com/bimuafaq/local_manifests .repo/local_manifests
 
       - name: Repo sync and apply patches
@@ -148,7 +148,7 @@ jobs:
           TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
         run: |
           source build/envsetup.sh
-          lunch lineage_RMX2185-user
+          lunch lineage_RMX2185-userdebug
           make $TARGET -j$(nproc) 2>&1 | tee /tmp/build.log &
           BUILD_PID=$!
           LAST_PCT=""
