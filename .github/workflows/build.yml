@@ -12,6 +12,7 @@ on:
           - SystemUI
           - TrebuchetQuickStep
           - Settings
+          - selinux_policy
           - org.lineageos.platform SystemUI LineageParts LineageSettingsProvider
 
 jobs:
@@ -149,7 +150,7 @@ jobs:
           TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
         run: |
           source build/envsetup.sh
-          lunch lineage_RMX2185-userdebug
+          lunch lineage_RMX2185-user
           make $TARGET -j$(nproc) 2>&1 | tee /tmp/build.log &
           BUILD_PID=$!
           LAST_PCT=""
