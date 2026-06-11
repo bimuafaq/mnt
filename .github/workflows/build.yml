@@ -146,7 +146,7 @@ jobs:
           source build/envsetup.sh
           lunch lineage_RMX2185-user
           START_TS=$(date +%s)
-          make $TARGET -j$(nproc) 2>&1 | tee /tmp/build.log
+          mka $TARGET 2>&1 | tee /tmp/build.log
           BUILD_EXIT=${PIPESTATUS[0]}
           END_TS=$(date +%s)
           ELAPSED=$(( END_TS - START_TS ))
