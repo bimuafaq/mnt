@@ -161,7 +161,7 @@ jobs:
           LAST_PCT=""
           MSG_ID=""
           while kill -0 $BUILD_PID 2>/dev/null; do
-            sleep 120
+            sleep 60
             LINE=$(tail -100 /tmp/build.log | grep -oP '\[\s*\d+%\s*\d+/\d+\]' | tail -1)
             PCT=$(echo "$LINE" | grep -oP '\d+(?=%)')
             JOBS=$(echo "$LINE" | grep -oP '\d+/\d+' | tail -1)
@@ -180,7 +180,7 @@ jobs:
                 -d "chat_id=${TELEGRAM_CHAT_ID}" \
                 --data-urlencode "text=${MSG}")
               MSG_ID=$(echo "$RESP" | grep -oP '"message_id":\K[0-9]+')
-            elif [[ "$PCT" != "$LAST_PCT" ]]; then
+            else
               curl -s "https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/editMessageText" \
                 -d "chat_id=${TELEGRAM_CHAT_ID}" \
                 -d "message_id=${MSG_ID}" \
