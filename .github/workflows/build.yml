@@ -174,8 +174,6 @@ jobs:
             RAM=$(free -h | awk '/^Mem:/{printf "%s/%s", $3, $2}')
             SWAP=$(free -h | awk '/^Swap:/{printf "%s/%s", $3, $2}')
             DISK=$(df -h / | tail -1 | awk '{print $3"/"$2}')
-            ZIP=$(ls out/target/product/RMX2185/lineage-*.zip 2>/dev/null | head -1)
-            ZIP="${ZIP##*/}"
             ELAPSED=$(( $(date +%s) - START_TS ))
             ELAPSED_FMT=$(printf '%dm %ds' $((ELAPSED/60)) $((ELAPSED%60)))
             MSG=$(printf "Build: %s%% (%s)\nTime:  %s\nCPU:   %s\nRAM:   %s\nSwap:  %s\nDisk:  %s" \
