@@ -65,6 +65,8 @@ jobs:
           rm -rf /home/runner/.rustup /home/runner/.cargo
           npm cache clean --force
           rm -rf /home/runner/.npm/_cacache
+          docker system prune -af --volumes 2>/dev/null || true
+          sudo rm -rf /var/lib/gems /usr/local/lib/node_modules
 
           echo "Listing disk space after cleanup:"
           df -h
@@ -83,6 +85,7 @@ jobs:
             schedtool squashfs-tools xsltproc xxd zip zlib1g-dev \
             lib32ncurses5-dev libncurses5 libncurses5-dev
           sudo apt-get install -y -qq python-is-python3
+          sudo apt-get clean -qq
 
       - name: Install repo
         run: |
