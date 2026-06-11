@@ -13,13 +13,8 @@ on:
           - TrebuchetQuickStep
           - Settings
           - selinux_policy
-          - bacon
+
           - org.lineageos.platform SystemUI LineageParts LineageSettingsProvider
-      release:
-        description: 'Create GitHub Release'
-        type: boolean
-        required: true
-        default: false
 
 jobs:
   build:
@@ -88,6 +83,15 @@ jobs:
           sudo apt-get install -y -qq python-is-python3
           sudo apt-get clean -qq
 
+          sudo wget -q https://storage.googleapis.com/git-repo-downloads/repo -O /usr/local/bin/repo
+          sudo chmod a+x /usr/local/bin/repo
+          repo --version
+
+          git config --global user.name "ci"
+          git config --global user.email "ci@ci.com"
+          git lfs install
+          git config --global trailer.changeid.key "Change-Id"
+
       - name: Cache ccache
         uses: actions/cache@v5
         with:
@@ -107,28 +111,11 @@ jobs:
           echo "CCACHE_EXEC=$(command -v ccache)" >> $GITHUB_ENV
           echo "CCACHE_COMPRESS=1" >> $GITHUB_ENV
 
-      - name: Install repo
-        run: |
-          sudo wget -q https://storage.googleapis.com/git-repo-downloads/repo -O /usr/local/bin/repo
-          sudo chmod a+x /usr/local/bin/repo
-          repo --version
-
-      - name: Git config
-        run: |
-          git config --global user.name "ci"
-          git config --global user.email "ci@ci.com"
-          git lfs install
-          git config --global trailer.changeid.key "Change-Id"
-
-      - name: Repo init
+      - name: Repo init & sync
         run: |
           repo init --depth=1 -u https://github.com/LineageOS/android.git -b lineage-17.1
           mkdir -p .repo/local_manifests
           mv device.xml .repo/local_manifests
-          # git clone --depth=1 https://github.com/bimuafaq/local_manifests .repo/local_manifests
-
-      - name: Repo sync and apply patches
-        run: |
           repo sync --force-sync -c --no-tags --optimized-fetch --prune -j$(nproc)
           df -h
           sed -i '/permissive domains not allowed in user builds/,/fi/{/exit 1/d}' system/sepolicy/Android.mk
@@ -158,58 +145,18 @@ jobs:
         run: |
           source build/envsetup.sh
           lunch lineage_RMX2185-user
-          make $TARGET -j$(nproc) 2>&1 | tee /tmp/build.log &
-          BUILD_PID=$!
           START_TS=$(date +%s)
-          LAST_PCT=""
-          MSG_ID=""
-          while kill -0 $BUILD_PID 2>/dev/null; do
-            sleep 10
-            LINE=$(tail -100 /tmp/build.log | grep -oP '\[\s*\d+%\s*\d+/\d+\]' | tail -1)
-            PCT=$(echo "$LINE" | grep -oP '\d+(?=%)')
-            JOBS=$(echo "$LINE" | grep -oP '\d+/\d+' | tail -1)
-            CPU=$(top -bn1 | grep "Cpu(s)" | awk '{print $2+$4"%"}')
-            RAM=$(free -h | awk '/^Mem:/{printf "%s/%s", $3, $2}')
-            SWAP=$(free -h | awk '/^Swap:/{printf "%s/%s", $3, $2}')
-            DISK=$(df -h / | tail -1 | awk '{printf "%s/%s free %s", $3, $2, $4}')
-            ELAPSED=$(( $(date +%s) - START_TS ))
-            ELAPSED_FMT=$(printf '%dm %ds' $((ELAPSED/60)) $((ELAPSED%60)))
-            MSG=$(printf "Build: %s%% (%s)\nTime:  %s\nCPU:   %s\nRAM:   %s\nSwap:  %s\nDisk:  %s" \
-              "${PCT:-0}" "${JOBS:-?/?}" \
-              "${ELAPSED_FMT}" \
-              "${CPU}" "${RAM}" "${SWAP}" "${DISK}")
-            if [[ -z "$MSG_ID" ]]; then
-              RESP=$(curl -s "https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage" \
-                -d "chat_id=${TELEGRAM_CHAT_ID}" \
-                --data-urlencode "text=${MSG}")
-              MSG_ID=$(echo "$RESP" | grep -oP '"message_id":\K[0-9]+')
-            else
-              curl -s "https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/editMessageText" \
-                -d "chat_id=${TELEGRAM_CHAT_ID}" \
-                -d "message_id=${MSG_ID}" \
-                --data-urlencode "text=${MSG}" \
-                -o /dev/null 2>&1
-              LAST_PCT="$PCT"
-            fi
-          done
-          wait $BUILD_PID
-
-      - name: Free space after
-        run: df -h /
-
-      - name: Generate tag
-        run: echo "RELEASE_TAG=$(date +%Y%m%d)" >> $GITHUB_ENV
-
-      - name: Upload Release
-        uses: softprops/action-gh-release@v2
-        if: inputs.release
-        with:
-          tag_name: ${{ env.RELEASE_TAG }}
-          name: ${{ env.RELEASE_TAG }}
-          files: out/target/product/*/*-RMX*.zip
-          draft: false
-          prerelease: false
-          generate_release_notes: true
+          make $TARGET -j$(nproc) 2>&1 | tee /tmp/build.log
+          BUILD_EXIT=${PIPESTATUS[0]}
+          END_TS=$(date +%s)
+          ELAPSED=$(( END_TS - START_TS ))
+          ELAPSED_FMT=$(printf '%dm %ds' $((ELAPSED/60)) $((ELAPSED%60)))
+          CAPTION="Build ${TARGET}: ${ELAPSED_FMT} (exit: ${BUILD_EXIT})"
+          curl -s -F "chat_id=${TELEGRAM_CHAT_ID}" \
+            -F "caption=${CAPTION}" \
+            -F "document=@/tmp/build.log" \
+            "https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendDocument" \
+            -o /dev/null 2>&1
 
       - name: ccache stats
         if: always()

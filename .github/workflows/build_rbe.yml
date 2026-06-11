@@ -12,7 +12,7 @@ on:
           - SystemUI
           - TrebuchetQuickStep
           - Settings
-          - bacon
+
           - org.lineageos.platform SystemUI LineageParts LineageSettingsProvider
 
 jobs:
@@ -82,26 +82,19 @@ jobs:
           sudo apt-get install -y -qq python-is-python3
           sudo apt-get clean -qq
 
-      - name: Install repo
-        run: |
           sudo wget -q https://storage.googleapis.com/git-repo-downloads/repo -O /usr/local/bin/repo
           sudo chmod a+x /usr/local/bin/repo
           repo --version
 
-      - name: Git config
-        run: |
           git config --global user.name "ci"
           git config --global user.email "ci@ci.com"
           git lfs install
           git config --global trailer.changeid.key "Change-Id"
 
-      - name: Repo init
+      - name: Repo init & sync
         run: |
           repo init --depth=1 -u https://github.com/LineageOS/android.git -b lineage-18.1
           git clone --depth=1 https://github.com/bimuafaq/local_manifests .repo/local_manifests
-
-      - name: Repo sync and apply patches
-        run: |
           repo sync --force-sync -c --no-tags --optimized-fetch --prune -j$(nproc)
           df -h
           .repo/local_manifests/patches/patches_apply.sh
@@ -153,41 +146,18 @@ jobs:
         run: |
           source build/envsetup.sh
           lunch lineage_RMX2185-user
-          make $TARGET -j$(nproc) 2>&1 | tee /tmp/build.log &
-          BUILD_PID=$!
           START_TS=$(date +%s)
-          LAST_PCT=""
-          MSG_ID=""
-          while kill -0 $BUILD_PID 2>/dev/null; do
-            sleep 10
-            LINE=$(tail -100 /tmp/build.log | grep -oP '\[\s*\d+%\s*\d+/\d+\]' | tail -1)
-            PCT=$(echo "$LINE" | grep -oP '\d+(?=%)')
-            JOBS=$(echo "$LINE" | grep -oP '\d+/\d+' | tail -1)
-            CPU=$(top -bn1 | grep "Cpu(s)" | awk '{print $2+$4"%"}')
-            RAM=$(free -h | awk '/^Mem:/{printf "%s/%s", $3, $2}')
-            SWAP=$(free -h | awk '/^Swap:/{printf "%s/%s", $3, $2}')
-            DISK=$(df -h / | tail -1 | awk '{printf "%s/%s free %s", $3, $2, $4}')
-            ELAPSED=$(( $(date +%s) - START_TS ))
-            ELAPSED_FMT=$(printf '%dm %ds' $((ELAPSED/60)) $((ELAPSED%60)))
-            MSG=$(printf "Build: %s%% (%s)\nTime:  %s\nCPU:   %s\nRAM:   %s\nSwap:  %s\nDisk:  %s" \
-              "${PCT:-0}" "${JOBS:-?/?}" \
-              "${ELAPSED_FMT}" \
-              "${CPU}" "${RAM}" "${SWAP}" "${DISK}")
-            if [[ -z "$MSG_ID" ]]; then
-              RESP=$(curl -s "https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage" \
-                -d "chat_id=${TELEGRAM_CHAT_ID}" \
-                --data-urlencode "text=${MSG}")
-              MSG_ID=$(echo "$RESP" | grep -oP '"message_id":\K[0-9]+')
-            else
-              curl -s "https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/editMessageText" \
-                -d "chat_id=${TELEGRAM_CHAT_ID}" \
-                -d "message_id=${MSG_ID}" \
-                --data-urlencode "text=${MSG}" \
-                -o /dev/null 2>&1
-              LAST_PCT="$PCT"
-            fi
-          done
-          wait $BUILD_PID
+          make $TARGET -j$(nproc) 2>&1 | tee /tmp/build.log
+          BUILD_EXIT=${PIPESTATUS[0]}
+          END_TS=$(date +%s)
+          ELAPSED=$(( END_TS - START_TS ))
+          ELAPSED_FMT=$(printf '%dm %ds' $((ELAPSED/60)) $((ELAPSED%60)))
+          CAPTION="Build ${TARGET}: ${ELAPSED_FMT} (exit: ${BUILD_EXIT})"
+          curl -s -F "chat_id=${TELEGRAM_CHAT_ID}" \
+            -F "caption=${CAPTION}" \
+            -F "document=@/tmp/build.log" \
+            "https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendDocument" \
+            -o /dev/null 2>&1
 
       - name: Package & Upload to Telegram
         env:
@@ -241,9 +211,4 @@ jobs:
               ;;
           esac
 
-      - name: Free space after
-        run: df -h /
 
-      - name: Source size
-        run: |
-          du -sh --exclude=.git
