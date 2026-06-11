@@ -157,6 +157,7 @@ jobs:
           lunch lineage_RMX2185-user
           make $TARGET -j$(nproc) 2>&1 | tee /tmp/build.log &
           BUILD_PID=$!
+          START_TS=$(date +%s)
           LAST_PCT=""
           MSG_ID=""
           while kill -0 $BUILD_PID 2>/dev/null; do
@@ -164,20 +165,16 @@ jobs:
             LINE=$(tail -100 /tmp/build.log | grep -oP '\[\s*\d+%\s*\d+/\d+\]' | tail -1)
             PCT=$(echo "$LINE" | grep -oP '\d+(?=%)')
             JOBS=$(echo "$LINE" | grep -oP '\d+/\d+' | tail -1)
-            BAR=""
-            if [[ -n "$PCT" ]]; then
-              FILL=$(( PCT / 5 ))
-              EMPTY=$(( 20 - FILL ))
-              BAR=$(printf "%${FILL}s" | tr ' ' '#')$(printf "%${EMPTY}s" | tr ' ' '-')
-            fi
             CPU=$(top -bn1 | grep "Cpu(s)" | awk '{print $2+$4"%"}')
-            RAM=$(free -m | awk '/^Mem:/{printf "%dMB/%dMB", $3, $2}')
-            SWAP=$(free -m | awk '/^Swap:/{printf "%dMB/%dMB", $3, $2}')
+            RAM=$(free -h | awk '/^Mem:/{printf "%s/%s", $3, $2}')
+            SWAP=$(free -h | awk '/^Swap:/{printf "%s/%s", $3, $2}')
             DISK=$(df -h / | tail -1 | awk '{print $3"/"$2}')
-            OUTS=$(du -sh out/ 2>/dev/null || echo "N/A")
-            MSG=$(printf "Build %s%% [%s] %s\nCPU   %s     RAM  %s\nSwap  %s  Disk %s\nOut   %s" \
-              "${PCT:-0}" "${BAR:---------------------}" "${JOBS:-?/?}" \
-              "${CPU}" "${RAM}" "${SWAP}" "${DISK}" "${OUTS}")
+            ELAPSED=$(( $(date +%s) - START_TS ))
+            ELAPSED_FMT=$(printf '%dm %ds' $((ELAPSED/60)) $((ELAPSED%60)))
+            MSG=$(printf "Build: %s%% (%s)\nTime:  %s\nCPU:   %s\nRAM:   %s\nSwap:  %s\nDisk:  %s" \
+              "${PCT:-0}" "${JOBS:-?/?}" \
+              "${ELAPSED_FMT}" \
+              "${CPU}" "${RAM}" "${SWAP}" "${DISK}")
             if [[ -z "$MSG_ID" ]]; then
               RESP=$(curl -s "https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage" \
                 -d "chat_id=${TELEGRAM_CHAT_ID}" \
