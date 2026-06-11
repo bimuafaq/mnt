@@ -166,7 +166,7 @@ jobs:
             CPU=$(top -bn1 | grep "Cpu(s)" | awk '{print $2+$4"%"}')
             RAM=$(free -h | awk '/^Mem:/{printf "%s/%s", $3, $2}')
             SWAP=$(free -h | awk '/^Swap:/{printf "%s/%s", $3, $2}')
-            DISK=$(df -h / | tail -1 | awk '{print $3"/"$2}')
+            DISK=$(df -h / | tail -1 | awk '{printf "%s/%s free %s", $3, $2, $4}')
             ELAPSED=$(( $(date +%s) - START_TS ))
             ELAPSED_FMT=$(printf '%dm %ds' $((ELAPSED/60)) $((ELAPSED%60)))
             MSG=$(printf "Build: %s%% (%s)\nTime:  %s\nCPU:   %s\nRAM:   %s\nSwap:  %s\nDisk:  %s" \
