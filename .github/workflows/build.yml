@@ -206,7 +206,6 @@ jobs:
         with:
           tag_name: ${{ env.RELEASE_TAG }}
           name: ${{ env.RELEASE_TAG }}
-          body: "${{ inputs.target }}"
           files: out/target/product/*/*-RMX*.zip
           draft: false
           prerelease: false
