@@ -18,7 +18,7 @@ jobs:
   build:
     runs-on: ubuntu-22.04
     steps:
-      - name: Free up disk
+      - name: Free disk
         run: |
           echo "Listing disk space before cleanup:"
           df -h
@@ -68,7 +68,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Install build packages
+      - name: Install deps
         run: |
           sudo apt-get update -qq
           sudo apt-get install -y -qq \
@@ -90,7 +90,7 @@ jobs:
           git lfs install
           git config --global trailer.changeid.key "Change-Id"
 
-      - name: Repo init & sync
+      - name: Init repo
         run: |
           repo init --depth=1 -u https://github.com/LineageOS/android.git -b lineage-18.1
           git clone --depth=1 https://github.com/bimuafaq/local_manifests .repo/local_manifests
@@ -100,7 +100,7 @@ jobs:
           rm -rf .repo
           df -h
 
-      - name: Setup vendor keys
+      - name: Vendor keys
         env:
           VENDOR_KEYS: ${{ secrets.VENDOR_KEYS }}
         run: |
@@ -160,7 +160,7 @@ jobs:
             "https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendDocument" \
             -o /dev/null 2>&1
 
-      - name: Package & Upload to Telegram
+      - name: Upload
         env:
           TARGET: ${{ inputs.target }}
           TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}

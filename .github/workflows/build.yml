@@ -19,7 +19,7 @@ jobs:
   build:
     runs-on: ubuntu-22.04
     steps:
-      - name: Free up disk
+      - name: Free disk
         run: |
           echo "Listing disk space before cleanup:"
           df -h
@@ -69,7 +69,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Install build packages
+      - name: Install deps
         run: |
           sudo apt-get update -qq
           sudo apt-get install -y -qq \
@@ -91,7 +91,7 @@ jobs:
           git lfs install
           git config --global trailer.changeid.key "Change-Id"
 
-      - name: Cache ccache
+      - name: Cache
         uses: actions/cache@v5
         with:
           path: ~/.ccache
@@ -110,7 +110,7 @@ jobs:
           echo "CCACHE_EXEC=$(command -v ccache)" >> $GITHUB_ENV
           echo "CCACHE_COMPRESS=1" >> $GITHUB_ENV
 
-      - name: Repo init & sync
+      - name: Init repo
         run: |
           repo init --depth=1 -u https://github.com/LineageOS/android.git -b lineage-17.1
           mkdir -p .repo/local_manifests
@@ -121,7 +121,7 @@ jobs:
           rm -rf .repo
           df -h
 
-      - name: Setup vendor keys
+      - name: Vendor keys
         env:
           VENDOR_KEYS: ${{ secrets.VENDOR_KEYS }}
         run: |
