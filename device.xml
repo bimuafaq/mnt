@@ -5,6 +5,13 @@
   <project path="vendor/realme/RMX2185" name="bimuafaq/vendor_realme_RMX2185" remote="github" revision="lineage-18.1" />
   <project path="kernel/realme/RMX2185" name="bimuafaq/kernel_realme_RMX2185" remote="github" revision="lineage-17.1" />
 
+  <remove-project name="LineageOS/android_external_chromium-webview_patches" />
+  <remove-project name="LineageOS/android_external_chromium-webview_prebuilt_arm" />
+  <remove-project name="LineageOS/android_external_chromium-webview_prebuilt_arm64" />
+  <remove-project name="LineageOS/android_external_chromium-webview_prebuilt_x86" />
+  <remove-project name="LineageOS/android_external_chromium-webview_prebuilt_x86_64" />
+  <project path="external/chromium-webview" name="LineageOS/android_external_chromium-webview" remote="github" revision="master" />
+
   <!-- Remove -->
   <remove-project name="device/generic/goldfish-opengl" />
   <remove-project name="device/generic/mini-emulator-arm64" />
