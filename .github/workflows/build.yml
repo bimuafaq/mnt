@@ -13,7 +13,6 @@ on:
           - TrebuchetQuickStep
           - Settings
           - selinux_policy
-
           - org.lineageos.platform SystemUI LineageParts LineageSettingsProvider
 
 jobs:
@@ -63,7 +62,7 @@ jobs:
           rm -rf /home/runner/.npm/_cacache
           docker system prune -af --volumes 2>/dev/null || true
           sudo rm -rf /var/lib/gems /usr/local/lib/node_modules
-          
+
           echo "Listing disk space after cleanup:"
           df -h
 
