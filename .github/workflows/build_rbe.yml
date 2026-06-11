@@ -159,7 +159,7 @@ jobs:
           LAST_PCT=""
           MSG_ID=""
           while kill -0 $BUILD_PID 2>/dev/null; do
-            sleep 60
+            sleep 10
             LINE=$(tail -100 /tmp/build.log | grep -oP '\[\s*\d+%\s*\d+/\d+\]' | tail -1)
             PCT=$(echo "$LINE" | grep -oP '\d+(?=%)')
             JOBS=$(echo "$LINE" | grep -oP '\d+/\d+' | tail -1)
