@@ -1,0 +1,39 @@
+#
+# Copyright (C) 2024 Antonino Scordino
+# Copyright (C) 2024 Souhrud Reddy
+#
+# SPDX-License-Identifier: Apache-2.0
+#
+
+name: Create Selfhosted Runner
+on:
+  workflow_dispatch:
+    inputs:
+        RUNNER_TOKEN:
+            description: 'This is the runner token, not PAT'
+            required: true
+
+jobs:
+  run-devspace-and-tmux:
+    runs-on: ubuntu-22.04
+    env:
+      CRAVE_CONF: ${{  secrets.CRAVE_CONF  }}
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Set up environment
+      run: |
+        sudo apt-get update && sudo apt-get install -y tmux
+        mkdir -p ~/bin
+        curl -s https://raw.githubusercontent.com/accupara/crave/master/get_crave.sh | bash
+        mv crave ~/bin/
+        sudo ln -sf ~/bin/crave /usr/bin/crave
+        echo "$CRAVE_CONF" > crave.conf
+
+    - name: Run crave devspace
+      run: |
+        crave devspace -- "rm -rf actions-runner || true
+        curl https://raw.githubusercontent.com/sounddrill31/crave_aosp_builder/refs/heads/main/scripts/runner-setup.sh | bash
+        cd actions-runner
+        ./config.sh --unattended --url \"https://github.com/${{ github.repository }}\" --token \"${{ inputs.RUNNER_TOKEN }}\""

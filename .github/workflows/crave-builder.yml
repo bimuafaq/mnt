@@ -1,0 +1,251 @@
+#
+# Copyright (C) 2024 Antonino Scordino
+# Copyright (C) 2024 Souhrud Reddy
+#
+# SPDX-License-Identifier: Apache-2.0
+#
+
+name: Crave Builder
+
+on:
+  workflow_dispatch:
+    inputs:
+      BASE_PROJECT:
+        description: 'Choose a base project'
+        required: true
+        default: 'LineageOS 18.1'
+        type: choice
+        options:
+          - 'LineageOS 20.0'
+          - 'LineageOS 21.0'
+          - 'LineageOS 22.1'
+          - 'ArrowOS 13.1'
+          - 'DerpFest 14.0'
+          - 'CipherOS 14'
+          - 'PixelOS 15'
+          - 'RisingOS 15 Revived'
+          - 'LineageOS 18.1'
+          - 'LineageOS 16.0'
+          - 'CyanogenMOD 14.1'
+          - 'AOSP'
+      BUILD_SCRIPT_URL:
+        description: 'Raw URL to build script (e.g. https://raw.githubusercontent.com/.../build.sh)'
+        required: false
+  watch:
+    types: [started]
+
+jobs:
+  Start-Runner:
+    runs-on: ubuntu-latest
+    env:
+      CRAVE_CONF: ${{  secrets.CRAVE_CONF  }}
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Set up environment
+      run: |
+        sudo apt-get update && sudo apt-get install -y tmux
+        mkdir -p ~/bin
+        curl -s https://raw.githubusercontent.com/accupara/crave/master/get_crave.sh | bash
+        mv crave ~/bin/
+        sudo ln -sf ~/bin/crave /usr/bin/crave
+        echo "$CRAVE_CONF" > crave.conf
+
+    - name: Run crave devspace
+      run: |
+        crave devspace -- "if [ -f actions-runner/run.sh ]; then
+          echo "Runner found! Restarting it..."
+        else
+          echo "Error! Runner not found!"
+          exit 1
+        fi
+
+        if tmux has-session -t ghactions; then
+          echo "Runner is already Running"
+        else
+          tmux kill-session -t ghactions
+          tmux new-session -d -s ghactions
+          tmux send-keys -t ghactions './actions-runner/run.sh' Enter
+          echo "Runner Started"
+        fi"
+
+  build:
+    needs: Start-Runner
+    timeout-minutes: 1440
+    name: Build using foss.crave.io
+    runs-on: self-hosted
+    concurrency:
+      group: ${{ github.repository_owner }}
+    env:
+      PAT: ${{  secrets.PAT  }}
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Set project variables
+      id: project
+      run: |
+        case "${{ inputs.BASE_PROJECT }}" in
+          "ArrowOS 13.1")
+            echo "PROJECTFOLDER=/crave-devspaces/Arrow13" >> $GITHUB_ENV
+            echo "PROJECTID=73" >> $GITHUB_ENV
+            ;;
+          "DerpFest 14.0")
+            echo "PROJECTFOLDER=/crave-devspaces/DerpFest14" >> $GITHUB_ENV
+            echo "PROJECTID=64" >> $GITHUB_ENV
+            ;;
+          "LineageOS 21.0")
+            echo "PROJECTFOLDER=/crave-devspaces/Lineage21" >> $GITHUB_ENV
+            echo "PROJECTID=72" >> $GITHUB_ENV
+            ;;
+          "LineageOS 22.1")
+            echo "PROJECTFOLDER=/crave-devspaces/Lineage22" >> $GITHUB_ENV
+            echo "PROJECTID=93" >> $GITHUB_ENV
+            ;;
+          "LineageOS 20.0")
+            echo "PROJECTFOLDER=/crave-devspaces/Lineage20" >> $GITHUB_ENV
+            echo "PROJECTID=36" >> $GITHUB_ENV
+            ;;
+          "CipherOS 14")
+            echo "PROJECTFOLDER=/crave-devspaces/Cipher14" >> $GITHUB_ENV
+            echo "PROJECTID=79" >> $GITHUB_ENV
+            ;;
+          "PixelOS 15")
+            echo "PROJECTFOLDER=/crave-devspaces/Pixel15" >> $GITHUB_ENV
+            echo "PROJECTID=82" >> $GITHUB_ENV
+            ;;
+          "RisingOS 15 Revived")
+            echo "PROJECTFOLDER=/crave-devspaces/Rising15" >> $GITHUB_ENV
+            echo "PROJECTID=86" >> $GITHUB_ENV
+            ;;
+          "LineageOS 18.1")
+            echo "PROJECTFOLDER=/crave-devspaces/Lineage18" >> $GITHUB_ENV
+            echo "PROJECTID=85" >> $GITHUB_ENV
+            ;;
+          "LineageOS 16.0")
+            echo "PROJECTFOLDER=/crave-devspaces/Lineage16" >> $GITHUB_ENV
+            echo "PROJECTID=81" >> $GITHUB_ENV
+            ;;
+          "CyanogenMOD 14.1")
+            echo "PROJECTFOLDER=/crave-devspaces/Cyanogen14" >> $GITHUB_ENV
+            echo "PROJECTID=83" >> $GITHUB_ENV
+            ;;
+          "AOSP")
+            echo "PROJECTFOLDER=/crave-devspaces/AOSP" >> $GITHUB_ENV
+            echo "PROJECTID=35" >> $GITHUB_ENV
+            ;;
+        esac
+
+    - name: Setup crave config
+      env:
+        CRAVE_CONFIG: ${{ secrets.CRAVE_CONFIG }}
+      run: |
+        if [ -n "$CRAVE_CONFIG" ]; then
+          printf '%s\n' "$CRAVE_CONFIG" > crave.yml
+        fi
+
+    - name: Setup Project
+      run: |
+        echo "Creating clone..."
+        crave clone destroy -y $PROJECTFOLDER || :
+        crave clone create --projectID $PROJECTID $PROJECTFOLDER || :
+        cp .github/crave/crave.yaml $PROJECTFOLDER/.repo/manifests/crave.yaml
+
+    - name: Push vendor keys
+      env:
+        VENDOR_KEYS: ${{ secrets.VENDOR_KEYS }}
+      run: |
+        echo "Pushing vendor_keys to workspace..."
+        cd $PROJECTFOLDER
+        echo "$VENDOR_KEYS" | base64 -d > vendor_keys.zip
+        unzip -o vendor_keys.zip
+        rm -f vendor_keys.zip
+        crave -n push -d /tmp/src/android/ vendor_keys
+        crave ssh -- "du -sh out/"
+        exit 1
+        
+        
+    - name: Start build
+      timeout-minutes: 1440
+      run: |
+        echo "Starting build..."
+        cd $PROJECTFOLDER
+        crave run --no-patch -- "curl -s ${{ inputs.BUILD_SCRIPT_URL }} | bash"
+
+    - name: Upload to GitHub Release
+      if: ${{ success() }}
+      run: |
+        cd $PROJECTFOLDER
+        crave ssh -- "
+          gh auth login --with-token <<< \"${{ secrets.PAT }}\"
+          rom_file=\$(find out/target/product -maxdepth 2 -name \"*-RMX*.zip\" ! -name \"*md5*\" -printf \"%T@ %p\n\" 2>/dev/null | sort -rn | head -1 | cut -d' ' -f2-)
+          if [ -z \"\$rom_file\" ]; then echo \"skipping uploads: no rom files found\"; exit 0; fi
+          GH_REPO=\"${{ github.repository }}\"
+          rom_name=\$(basename \"\$rom_file\")
+          TAG=\"\$(date +%Y%m%d)\"
+          i=1
+          while gh release view \"\$TAG\" -R \"\$GH_REPO\" &>/dev/null; do TAG=\"\$(date +%Y%m%d)-\$i\"; ((i++)); done
+          gh release create \"\$TAG\" --title \"\${rom_name%.zip}\" -R \"\$GH_REPO\" || true
+          gh release upload \"\$TAG\" -R \"\$GH_REPO\" \"\$rom_file\" --clobber
+          echo \"Upload complete: \$TAG\"
+        "
+
+    - name: Display error.log
+      if: ${{ failure() }}
+      id: errorlog
+      run: |
+        cd $PROJECTFOLDER
+        crave ssh -- sleep 1
+        crave pull out/error.log
+        echo "Displaying out/error.log"
+        cat out/error.log
+
+    - name: Execute if the job is cancelled
+      if: ${{ cancelled() }}
+      run: |
+        cd $PROJECTFOLDER
+        crave stop --all
+
+    - name: Destroy Project Folders
+      if: ${{ always() }}
+      run: |
+        crave clone destroy -y $PROJECTFOLDER || :
+
+  Upload-Telegram:
+    needs: build
+    if: ${{ success() }}
+    runs-on: ubuntu-22.04
+    env:
+      PAT: ${{ secrets.PAT }}
+      GH_RELEASE_REPO: ${{ github.repository }}
+      TELEGRAM_UPLOAD_CONF: ${{ secrets.TELEGRAM_UPLOAD_CONF }}
+      TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Install dependencies
+      run: |
+        sudo apt update && sudo apt install -y wget python3-pip p7zip-full libssl-dev
+        sudo python3 -m pip install --upgrade pip
+        sudo python3 -m pip install gdown telegram-upload Telethon hachoir cryptg click
+
+    - name: Setup Telegram config
+      run: |
+        echo "$TELEGRAM_UPLOAD_CONF" | base64 -d > config.zip
+        unzip -o config.zip -d ~/.config/
+        rm config.zip
+
+    - name: Auth gh
+      run: gh auth login --with-token <<< "$PAT"
+
+    - name: Download latest release
+      run: |
+        latest=$(gh release list -R "$GH_RELEASE_REPO" --json tagName -q '.[0].tagName')
+        echo "tag=$latest" >> $GITHUB_ENV
+        gh release download "$latest" -R "$GH_RELEASE_REPO" --pattern "*.zip"
+
+    - name: Upload to Telegram
+      run: >
+        telegram-upload *.zip --to "$TELEGRAM_CHAT_ID"
+        --caption "Workflow: $GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID"

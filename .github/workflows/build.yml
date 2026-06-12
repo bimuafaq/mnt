@@ -1,8 +1,13 @@
-name: Build AOSP Module
+name: Build AOSP Module (RBE)
 
 on:
   workflow_dispatch:
     inputs:
+      rbe:
+        description: 'Enable RBE (Remote Build Execution)'
+        type: boolean
+        required: true
+        default: true
       target:
         description: 'Module to build'
         type: choice
@@ -12,7 +17,6 @@ on:
           - SystemUI
           - TrebuchetQuickStep
           - Settings
-          - selinux_policy
           - org.lineageos.platform SystemUI LineageParts LineageSettingsProvider
 
 jobs:
@@ -92,14 +96,16 @@ jobs:
           git config --global trailer.changeid.key "Change-Id"
 
       - name: Cache
+        if: ${{ !inputs.rbe }}
         uses: actions/cache@v5
         with:
           path: ~/.ccache
-          key: ccache-lineage-17.1-${{ github.run_id }}
+          key: ccache-lineage-18.1-${{ github.run_id }}
           restore-keys: |
-            ccache-lineage-17.1-
+            ccache-lineage-18.1-
 
       - name: Setup ccache
+        if: ${{ !inputs.rbe }}
         run: |
           mkdir -p ~/.ccache
           ccache -M 5G
@@ -111,12 +117,13 @@ jobs:
           echo "CCACHE_COMPRESS=1" >> $GITHUB_ENV
 
       - name: Init repo
+        if: ${{ inputs.rbe }}
         run: |
-          repo init --depth=1 -u https://github.com/LineageOS/android.git -b lineage-17.1
-          git clone --depth=1 https://github.com/bimuafaq/local_manifests -b q .repo/local_manifests
+          repo init --depth=1 -u https://github.com/LineageOS/android.git -b lineage-18.1
+          git clone --depth=1 https://github.com/bimuafaq/local_manifests .repo/local_manifests
           repo sync --force-sync -c --no-tags --optimized-fetch --prune -j$(nproc)
           df -h
-          sed -i '/permissive domains not allowed in user builds/,/fi/{/exit 1/d}' system/sepolicy/Android.mk
+          .repo/local_manifests/patches/patches_apply.sh
           rm -rf .repo
           df -h
 
@@ -132,9 +139,34 @@ jobs:
           sudo ln -sf "$OWN_KEYS_DIR/releasekey.x509.pem" "$OWN_KEYS_DIR/testkey.x509.pem"
           echo "OWN_KEYS_DIR=$OWN_KEYS_DIR" >> $GITHUB_ENV
 
+      - name: Setup RBE
+        if: ${{ inputs.rbe }}
+        run: |
+          rm -rf prebuilts/remoteexecution-client
+          git clone --depth=1 https://android.googlesource.com/platform/prebuilts/remoteexecution-client prebuilts/remoteexecution-client
+          rm -f prebuilts/remoteexecution-client/Android.bp
+          bash rbe_fix/scripts/build_patched_reclient.sh .
+          patch -p1 < rbe_fix/patches/aosp11-rbe-buildbuddyfix-defaults.patch
+          {
+            echo "USE_RBE=1"
+            echo "RBE_service=${{ secrets.RBE_SERVICE }}"
+            echo "RBE_remote_headers=x-buildbuddy-api-key=${{ secrets.BUILDBUDDY_API_KEY }}"
+            echo "RBE_use_rpc_credentials=false"
+            echo "RBE_service_no_auth=true"
+            echo "NINJA_REMOTE_NUM_JOBS=128"
+            echo "RBE_use_unified_downloads=true"
+            echo "RBE_use_unified_uploads=true"
+            echo "RBE_CXX_EXEC_STRATEGY=remote_local_fallback"
+            echo "RBE_JAVAC_EXEC_STRATEGY=remote_local_fallback"
+            echo "RBE_R8_EXEC_STRATEGY=remote_local_fallback"
+            echo "RBE_D8_EXEC_STRATEGY=remote_local_fallback"
+            echo "RBE_CXX=1"
+            echo "RBE_JAVAC=1"
+            echo "RBE_R8=1"
+            echo "RBE_D8=1"
+          } >> $GITHUB_ENV
+
       - name: Build
-        timeout-minutes: 240
-        continue-on-error: true
         env:
           TARGET: ${{ inputs.target }}
           NINJA_HIGHMEM_NUM_JOBS: 1
@@ -156,7 +188,58 @@ jobs:
             "https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendDocument" \
             -o /dev/null 2>&1
 
-      - name: ccache stats
-        if: always()
-        run: ccache -s -v
+      - name: Upload
+        env:
+          TARGET: ${{ inputs.target }}
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+        run: |
+          VERSION=$(date +%y%m%d-%H%M)
+          OUT="out/target/product/RMX2185"
 
+          tg_upload() {
+            curl -sf -F "chat_id=${TELEGRAM_CHAT_ID}" \
+                 -F "caption=${TARGET} | ${VERSION}" \
+                 -F "document=@$1" \
+                 -F "parse_mode=HTML" \
+                 -F "disable_web_page_preview=true" \
+                 "https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendDocument" > /dev/null
+          }
+
+          case "$TARGET" in
+            TrebuchetQuickStep)
+              cd "$OUT/system/system_ext/priv-app/TrebuchetQuickStep"
+              zip -r launcher3.zip TrebuchetQuickStep.apk
+              tg_upload launcher3.zip
+              ;;
+            Settings)
+              cd "$OUT/system/system_ext/priv-app/Settings"
+              zip -r Settings.zip Settings.apk
+              tg_upload Settings.zip
+              ;;
+            SystemUI)
+              cd "$OUT"
+              ZIPNAME="systemui-${VERSION}.zip"
+              printf 'id=system_push_test\nname=System Test\nversion=%s\nversionCode=%s\nauthor=system\ndescription=System Test\n' \
+                "$VERSION" "${VERSION//-/}" > module.prop
+              zip -r "$ZIPNAME" module.prop system/system_ext/priv-app/SystemUI/SystemUI.apk
+              tg_upload "$ZIPNAME"
+              ;;
+            "org.lineageos.platform SystemUI LineageParts LineageSettingsProvider")
+              cd "$OUT"
+              ZIPNAME="system-test-${VERSION}.zip"
+              printf 'id=system_push_test\nname=System Test\nversion=%s\nversionCode=%s\nauthor=system\ndescription=System Test\n' \
+                "$VERSION" "${VERSION//-/}" > module.prop
+              zip -r "$ZIPNAME" \
+                module.prop \
+                system/framework/org.lineageos.platform.jar \
+                system/system_ext/priv-app/SystemUI/SystemUI.apk \
+                system/priv-app/LineageParts/LineageParts.apk \
+                system/priv-app/LineageSettingsProvider/LineageSettingsProvider.apk
+              tg_upload "$ZIPNAME"
+              ;;
+          esac
+
+      - name: ccache stats
+        if: ${{ !inputs.rbe }}
+        run: ccache -s -v
