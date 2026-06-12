@@ -113,8 +113,7 @@ jobs:
       - name: Init repo
         run: |
           repo init --depth=1 -u https://github.com/LineageOS/android.git -b lineage-17.1
-          mkdir -p .repo/local_manifests
-          mv device.xml .repo/local_manifests
+          git clone --depth=1 https://github.com/bimuafaq/local_manifests -b q .repo/local_manifests
           repo sync --force-sync -c --no-tags --optimized-fetch --prune -j$(nproc)
           df -h
           sed -i '/permissive domains not allowed in user builds/,/fi/{/exit 1/d}' system/sepolicy/Android.mk
