@@ -96,6 +96,7 @@ jobs:
             echo "PROJECTID=85" >> $GITHUB_ENV
             ;;
         esac
+        echo "CRAVE_RUN_BUILD=crave run --no-patch -- \"curl -s ${{ inputs.BUILD_SCRIPT_URL }} | bash\"" >> $GITHUB_ENV
 
     - name: Setup crave config
       env:
@@ -125,16 +126,16 @@ jobs:
         unzip -o vendor_keys.zip
         rm -f vendor_keys.zip
         crave -n push -d /tmp/src/android/ vendor_keys
-        crave ssh -- "du -sh out/"
-        exit 1
         
         
     - name: Start build
       timeout-minutes: 1440
       run: |
         echo "Starting build..."
+        echo "Project folder: $PROJECTFOLDER"
         cd $PROJECTFOLDER
-        crave run --no-patch -- "curl -s ${{ inputs.BUILD_SCRIPT_URL }} | bash"
+        echo "$CRAVE_RUN_BUILD"
+        $CRAVE_RUN_BUILD
 
     - name: Upload to GitHub Release
       if: ${{ success() }}
