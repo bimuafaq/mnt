@@ -113,7 +113,7 @@ jobs:
         cp .github/crave/crave.yaml $PROJECTFOLDER/.repo/manifests/crave.yaml
         cp .github/crave/.craverc $PROJECTFOLDER/.repo/manifests/.craverc
         cd $PROJECTFOLDER
-        crave push -d /tmp/src/android/ .repo/manifests/.craverc
+        crave push -d /tmp/src/android/.repo/manifests/.craverc
 
     - name: Push vendor keys
       env:
