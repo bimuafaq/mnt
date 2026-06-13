@@ -111,9 +111,9 @@ jobs:
         crave clone destroy -y $PROJECTFOLDER || :
         crave clone create --projectID $PROJECTID $PROJECTFOLDER || :
         cp .github/crave/crave.yaml $PROJECTFOLDER/.repo/manifests/crave.yaml
-        cp .github/crave/.craverc $PROJECTFOLDER/.repo/manifests/.craverc
+        cp .github/crave/.craverc $PROJECTFOLDER/.craverc
         cd $PROJECTFOLDER
-        crave push -d /tmp/src/android/.repo/manifests/.craverc
+        crave push -d /tmp/src/android/ .craverc
 
     - name: Push vendor keys
       env:
